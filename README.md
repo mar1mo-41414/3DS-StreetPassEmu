@@ -46,6 +46,7 @@ pytest                      # ハードウェア不要のテスト一式
 |---|---|
 | [docs/STATUS.md](docs/STATUS.md) | できること(再現方法つき) / まだできないこと / 未解決の課題 |
 | [docs/SETUP.md](docs/SETUP.md) | clone直後から実機とすれちがうまでの手順 |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | うまくいかないときの症状別の切り分け |
 | [docs/CUSTOM.md](docs/CUSTOM.md) | 送信データのカスタマイズ(`mii_plaza_editor.py`の使い方) |
 | [docs/PROTOCOL_REFERENCE.md](docs/PROTOCOL_REFERENCE.md) | 確定しているプロトコル・データ形式の仕様 |
 | [docs/GAME_FORMATS.md](docs/GAME_FORMATS.md) | Mii Plazaの受理判定、とびだせ どうぶつの森のメッセージ形式 |
@@ -63,6 +64,10 @@ pytest                      # ハードウェア不要のテスト一式
 | `scripts/extract_extdata_file.py` | NAND内のextdata/sysdataファイルを展開 |
 | `scripts/extract_console_miis.py` | 共有MiiデータベースからMiiを列挙・抽出 |
 | `scripts/extract_recently_played.py` | ダンプ内の「最近遊んだソフト」リストを探索 |
+
+## ライセンス
+
+[MIT License](LICENSE)。自由にclone・改変・再配布してください。
 
 ## 注意
 

@@ -300,11 +300,10 @@ sudo -E uv run --with pycryptodome python ../../scripts/streetpass_loop.py \
 
 ## 7. トラブルシューティング
 
-| 症状 | 原因・対処 |
-|---|---|
-| `wlan_ifaces()`が空を返す | チップ非対応、または(Linuxで)USBデバイスノードの権限不足。`lsusb`でVID:PIDを確認し`tools/wifit3`の対応表と照合。恒久的にsudo無しで使えるようにするには本節の「Linuxでsudo無しで動かす」を参照 |
-| `BringUpPermissionsError: ... Resource busy` | 別プロセスがUSBデバイスを掴んだまま(前回のテストが終了しきっていない等)。`ps aux \| grep live_streetpass`や`fuser -v /dev/bus/usb/.../...`で該当プロセスを確認しkillする。`streetpass_loop.py`はこれを自動リトライする |
-| ハンドシェイクが途中(beacon/probeの往復)で止まる | 電波状況(RF)の問題であることが多い。3DSとの距離・向き・USBアダプタの位置を変えて再試行。も参照 |
-| `outer HMAC valid: False` | body部分(コメント/Mii blob等)を書き換えた後に`recompute_hmac()`(または`mii_plaza_editor.py edit`)を呼び忘れている |
-| コメント書き換えで`ValueError: 16文字以下でなければ...` | 自己紹介コメントは実機の入力欄上限である16文字までしか書き込めない。全角/半角混在の文字列は`len()`で正確な文字数を確認してから指定する |
-| 送信は成功する(すれちがいランプ点灯)のに広場に相手が現れない | body内のデータ形式が壊れている可能性が高い。`mii_plaza_editor.py verify`で`outer HMAC`/`Mii CRC16`/`Mii CCM tag`の**3つ全て**が`OK`か確認する——`Mii CCM tag`だけ`NG`になっているケースが特に多い(、2026-09-23解決) |
+症状別の切り分けは **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** にまとめてある。
+よくあるもの:
+
+- 実機のフレームは届くのに会話が進まない → `STREETPASS_KEYSLOT_2E_FILE`が`sudo`経由で
+  引き継がれていない(TROUBLESHOOTING.md A-2)
+- 緑ランプは点灯するのにMii広場に相手が出ない → `mii_plaza_editor.py verify`で
+  3項目(HMAC / CRC16 / CCMタグ)が全て`OK`か確認(同 C-1)

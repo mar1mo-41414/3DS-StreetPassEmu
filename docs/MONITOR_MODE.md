@@ -73,15 +73,9 @@ READMEに明記: Mini-Driverは「コーディングエージェントがLinux�
 
 ## 5. ライセンス
 
-wifit3自体はGPL-2.0-only。Mini-Driver部分をベースに派生実装を作る場合、**そのモジュールは
-GPLv2に汚染される**点に注意(コピーレフト)。本プロジェクト全体をGPLv2にするか、
-Mini-Driver層だけ別プロセス/別パッケージに分離するか、要検討。
-
-## 6. 次のステップ
-
-1. `docs/porting/CHIP-DOC.md` と実際に手元にあるUSBアダプタのチップセットを照合し、
-   `FakeMacSupport.SPOOFABLE` なチップを選定する。
-2. wifit3の`campaigns/`を参考に、`Driver`をラップした最小限のStreetPass RX/TXモジュールを
-   `src/streetpass_emu/`側に(wifit3のコードをコピーせず、`tools/wifit3`を外部依存として
-   参照する形で)実装する。
-3. ライセンス方針(GPLv2汚染範囲)をこの作業に着手する前に確定する。
+wifit3自体はGPL-2.0-only。本プロジェクト(MIT License)は**wifit3のコードをコピーせず**、
+`tools/wifit3`に別途cloneしたものを外部依存として参照するだけの設計にしている
+(`src/streetpass_emu/driver_bridge.py`はwifit3の`WlanInterface`のうち必要な部分を
+`Protocol`として定義し、wifit3自体には依存しない)。そのため本リポジトリにはGPLのコードは
+含まれない。wifit3側のコードを取り込んで改変・再配布する場合は、そのモジュールが
+GPLv2の対象になる点に注意。

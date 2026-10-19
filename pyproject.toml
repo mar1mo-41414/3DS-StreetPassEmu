@@ -3,6 +3,8 @@ name = "streetpass-emu"
 version = "0.1.0"
 description = "PC-based emulation of Nintendo 3DS StreetPass (research/reverse-engineering project)"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "pycryptodome>=3.20",
 ]
