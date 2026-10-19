@@ -433,4 +433,22 @@ offset 0x08〜:     MiiOfficial(mii.py、0x5C=92バイト)がスロット単位�
 | Mii QR AES鍵 | `59FC817E6446EA6190347B20E9BDCE52` | いいえ(全世界共通) | `mii_qr.py`に直書き |
 | フレンドコード | 実機固有 | はい | `STREETPASS_FRIEND_CODE_FILE`(secrets) |
 
-セットアップ手順・環境変数の詳細は [`docs/SETUP.md`](SETUP.md) を参照。
+### keyslot 0x2E のKeyX/KeyYの取得方法(`aes_keys.txt`)
+
+GodMode9([`d0k3/GodMode9`](https://github.com/d0k3/GodMode9))を使って、**自分の3DS実機から
+`aes_keys.txt`を取得する**。取得したファイルの中の`slot0x2EKeyX`と`slot0x2EKeyY`の2行が
+必要な値(各16バイト=32桁の16進文字列)。
+
+- `aes_keys.txt`は、GodMode9用のコミュニティ製スクリプト(`DumpAESkey.gm9`等)で生成する
+  のが一般的で、実機のSDカードの`gm9/out/`に出力される。入手方法・実行方法は
+  「GodMode9 aes_keys.txt」などで検索すれば公開情報が多数見つかる
+- 生成されるファイルには複数のスロットの鍵が含まれる。このプロジェクトが使うのは
+  `slot0x2EKeyX`/`slot0x2EKeyY`の2行だけ
+- 値は`3DS-StreetPassEmu`の外(`secrets/`など)に、
+  `{"key_x": "<32桁hex>", "key_y": "<32桁hex>"}`形式のJSONとして置き、
+  環境変数`STREETPASS_KEYSLOT_2E_FILE`でそのパスを指す
+  ([SETUP.md](SETUP.md) §4.2)。**リポジトリには絶対にコミットしない**
+- NANDの復号に必要な`boot9.bin`・`otp.bin`と生NANDバックアップも、同じくGodMode9の
+  バックアップ機能で取得する([SETUP.md](SETUP.md) §4.1)
+
+セットアップ手順・環境変数の詳細は [SETUP.md](SETUP.md) を参照。

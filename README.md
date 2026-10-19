@@ -29,7 +29,7 @@ Nintendo 3DSの「すれちがい通信(StreetPass)」を、PC(モニターモ�
 ## クイックスタート
 
 ```bash
-git clone <このリポジトリのURL> 3DS-StreetPassEmu
+git clone https://github.com/mar1mo-41414/3DS-StreetPassEmu.git
 cd 3DS-StreetPassEmu
 python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -e ".[dev]"

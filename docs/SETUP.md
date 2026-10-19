@@ -22,7 +22,7 @@
 ## 1. リポジトリ本体
 
 ```bash
-git clone <このリポジトリのURL> 3DS-StreetPassEmu
+git clone https://github.com/mar1mo-41414/3DS-StreetPassEmu.git
 cd 3DS-StreetPassEmu
 ```
 
@@ -136,8 +136,10 @@ ls ctrnand_mnt/data/   # 32桁のid0ディレクトリが1つ見えるはず
 
 ### 4.2 keyslot 0x2E の鍵(`STREETPASS_KEYSLOT_2E_FILE`)
 
-GodMode9ダンプに含まれる`aes_keys.txt`の`slot0x2EKeyX`/`slot0x2EKeyY`の
-行を使い、以下の形式のJSONを作る:
+GodMode9で取得した`aes_keys.txt`(実機のSDカードの`gm9/out/`に出力される。
+生成方法は「GodMode9 aes_keys.txt」で検索すれば公開情報が多数ある。
+詳細は[PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md) §10)の
+`slot0x2EKeyX`/`slot0x2EKeyY`の行を使い、以下の形式のJSONを作る:
 
 ```json
 {
