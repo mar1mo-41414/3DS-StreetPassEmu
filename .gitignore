@@ -1,0 +1,18 @@
+tools/wifit3/
+received_boxes/
+secrets/
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+uv.lock
+
+# homebrew build artifacts (devkitARM output, rebuildable from source/ + Makefile)
+homebrew/**/*.3dsx
+homebrew/**/*.elf
+homebrew/**/*.smdh
+homebrew/**/build/
