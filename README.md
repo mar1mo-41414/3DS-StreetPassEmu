@@ -1,80 +1,113 @@
 # 3DS-StreetPassEmu
 
-Nintendo 3DSの「すれちがい通信(StreetPass)」を、PC(モニターモード対応のUSB Wi-Fiアダプタ)で
-エミュレートするための研究用実装。**自分が所有する3DS実機**のNANDバックアップから
-必要な材料を取り出し、実機とすれちがい通信を成立させる。
+**English** | [日本語](README.ja.md)
 
-> PC-based emulation of Nintendo 3DS StreetPass over a monitor-mode USB Wi-Fi adapter
-> (research project; use only with consoles you own).
+**A research tool that connects your PC to your own Nintendo 3DS as a virtual StreetPass partner.**
+It is neither a 3DS emulator nor an online StreetPass relay. It talks StreetPass directly to
+your real console, within radio range, through a USB Wi-Fi adapter.
 
-## できること
+> **Read this first**
+> - You need more than "monitor-mode support": the USB Wi-Fi adapter must be able to
+>   **hardware-ACK frames addressed to a spoofed MAC address**. Adapters that cannot will not
+>   work. If you are buying a new one, **check wifit3's code before you buy** →
+>   [docs/EN/HARDWARE.md](docs/EN/HARDWARE.md)
+> - You need your own 3DS with custom firmware (CFW), because the AES key is extracted with
+>   GodMode9.
+> - A NAND backup is only needed to extract *other* Miis stored on the console and send them.
+>   See the table below for what each feature requires.
 
-- 実機3DS(スリープ中)とStreetPassの会話を成立させ、すれちがいメッセージ(TMP Box)を
-  双方向にやり取りする
-- 受信したメッセージの内容表示と、整合性(HMAC/CRC16/CCMタグ)の検証
-- 送信メッセージの書き換え: あいさつコメント、通知文言、送信者Mii(顔・ニックネーム・
-  識別情報を丸ごと)。実機のMii広場に「初めまして」/「n回目」として表示される
-- 実機のNANDバックアップだけから、鍵材料・自分のMii・過去に会った相手のMiiを取り出す
-- Mii Plaza以外のゲーム(とびだせ どうぶつの森)のメッセージ形式の解析結果
+## What it can do
 
-できること・まだできないこと・未解決の課題の詳細と再現手順は
-**[docs/STATUS.md](docs/STATUS.md)** を参照。
+- Hold a StreetPass conversation with a real 3DS (in sleep mode) and exchange StreetPass
+  messages (TMP Boxes) in both directions
+- Display received messages and verify their integrity (HMAC / CRC16 / CCM tag)
+- Rewrite outgoing messages: greeting comment, notification text, and the sender Mii (face,
+  nickname and identity IDs — the whole thing). The real console's Mii Plaza shows the result
+  as "first meeting" or "n-th meeting"
+- Extract other Miis stored on the console (people you met before, etc.) from a NAND backup
+- Documented message formats for a non-Mii-Plaza game (Animal Crossing: New Leaf; static
+  analysis only — not yet verified or sent to a real console)
 
-## 必要なもの
+For the full list of what works, what does not yet, open problems, and how to reproduce each
+item, see **[docs/EN/STATUS.md](docs/EN/STATUS.md)**.
 
-- CFW(GodMode9が使える状態)の3DS実機と、そのNANDバックアップ一式
-- モニターモード相当の操作ができるUSB Wi-Fiアダプタ(RTL8812AU/RTL8821AU系などで確認)
-- Linux(Raspberry Pi含む)またはmacOS、Python 3.10以上
+## What each feature requires
 
-## クイックスタート
+| What you want to do | What you need |
+|---|---|
+| Meet a real 3DS and receive/save its messages | A CFW 3DS (`aes_keys.txt` dumped with GodMode9) and a spoofed-MAC-capable USB Wi-Fi adapter. **No NAND backup needed** |
+| Take a received box as a template and rewrite the comment / notification text / use a different Mii | Same as above |
+| Extract other Miis stored on the console (people you met, etc.) and send them | The above **plus a NAND backup** (and `boot9.bin`, `otp.bin`) |
+
+Supported environment: Linux (including Raspberry Pi) or macOS, Python 3.10+. Windows is untested.
+
+## Quick start
 
 ```bash
 git clone https://github.com/mar1mo-41414/3DS-StreetPassEmu.git
 cd 3DS-StreetPassEmu
 python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -e ".[dev]"
-pytest                      # ハードウェア不要のテスト一式
+pytest                      # the test suite needs no hardware
 ```
 
-実機とすれちがうまでの手順(Wi-Fiドライバの用意、NANDバックアップからの材料抽出、
-最初のメッセージ受信、書き換えて送信)は **[docs/SETUP.md](docs/SETUP.md)** に
-上から順にまとめてある。
+The full walk-through — preparing the Wi-Fi driver, extracting keys, receiving your first
+message, then rewriting and sending — is in **[docs/EN/SETUP.md](docs/EN/SETUP.md)**.
 
-## ドキュメント
+## Documentation
 
-| ファイル | 内容 |
+| File | Contents |
 |---|---|
-| [docs/STATUS.md](docs/STATUS.md) | できること(再現方法つき) / まだできないこと / 未解決の課題 |
-| [docs/SETUP.md](docs/SETUP.md) | clone直後から実機とすれちがうまでの手順 |
-| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | うまくいかないときの症状別の切り分け |
-| [docs/CUSTOM.md](docs/CUSTOM.md) | 送信データのカスタマイズ(`mii_plaza_editor.py`の使い方) |
-| [docs/PROTOCOL_REFERENCE.md](docs/PROTOCOL_REFERENCE.md) | 確定しているプロトコル・データ形式の仕様 |
-| [docs/GAME_FORMATS.md](docs/GAME_FORMATS.md) | Mii Plazaの受理判定、とびだせ どうぶつの森のメッセージ形式 |
-| [docs/MONITOR_MODE.md](docs/MONITOR_MODE.md) | Wi-Fi層(モニターモード)の設計 |
-| [docs/ANALYSIS_ENV.md](docs/ANALYSIS_ENV.md) | 動的・静的解析環境メモ(上級者向け) |
+| [docs/EN/STATUS.md](docs/EN/STATUS.md) | What works (with reproduction steps) / what does not yet / open problems |
+| [docs/EN/HARDWARE.md](docs/EN/HARDWARE.md) | Choosing a USB Wi-Fi adapter (how to check spoofed-MAC support), verified-hardware table |
+| [docs/EN/SETUP.md](docs/EN/SETUP.md) | From `git clone` to meeting a real console |
+| [docs/EN/TROUBLESHOOTING.md](docs/EN/TROUBLESHOOTING.md) | Symptom-based diagnosis |
+| [docs/EN/CUSTOM.md](docs/EN/CUSTOM.md) | Customizing outgoing data (`mii_plaza_editor.py`) |
+| [docs/EN/PROTOCOL_REFERENCE.md](docs/EN/PROTOCOL_REFERENCE.md) | Confirmed protocol and data-format specification |
+| [docs/EN/GAME_FORMATS.md](docs/EN/GAME_FORMATS.md) | How Mii Plaza accepts a visitor; Animal Crossing: New Leaf message formats |
+| [docs/EN/MONITOR_MODE.md](docs/EN/MONITOR_MODE.md) | Wi-Fi layer (monitor mode) design |
+| [docs/EN/ANALYSIS_ENV.md](docs/EN/ANALYSIS_ENV.md) | Dynamic/static analysis environment notes (advanced) |
 
-## ツール
+Japanese versions are in [docs/JA/](docs/JA/).
 
-| スクリプト | 用途 |
+## Tools
+
+| Script | Purpose |
 |---|---|
-| `scripts/live_streetpass_test.py` | 実機との接続を1回試す動作確認 |
-| `scripts/streetpass_loop.py` | すれちがい通信を繰り返し試行する(送信データ指定可) |
-| `scripts/mii_plaza_editor.py` | TMP Boxの表示・検証・書き換え |
-| `scripts/decrypt_ctrnand.py` | 生NANDバックアップからCTRNANDを復号 |
-| `scripts/extract_extdata_file.py` | NAND内のextdata/sysdataファイルを展開 |
-| `scripts/extract_console_miis.py` | 共有MiiデータベースからMiiを列挙・抽出 |
-| `scripts/extract_recently_played.py` | ダンプ内の「最近遊んだソフト」リストを探索 |
+| `scripts/live_streetpass_test.py` | One-shot connection test against a real console |
+| `scripts/streetpass_loop.py` | Repeatedly attempt StreetPass exchanges (outgoing data configurable) |
+| `scripts/mii_plaza_editor.py` | Show / verify / rewrite a TMP Box |
+| `scripts/decrypt_ctrnand.py` | Decrypt CTRNAND out of a raw NAND backup |
+| `scripts/extract_extdata_file.py` | Unpack an extdata file from the NAND |
+| `scripts/extract_console_miis.py` | List and extract Miis from the shared Mii database |
+| `scripts/extract_recently_played.py` | Scan a dump for "recently played software" lists |
 
-## ライセンス
+## Please do not paste these into Issues
 
-[MIT License](LICENSE)。自由にclone・改変・再配布してください。
+The following are **personal / console-specific data**. Please **do not paste them** into
+Issues, discussions, screenshots or logs (edit them out if you did by mistake):
 
-## 注意
+- NAND backups, `boot9.bin`, `otp.bin`, `movable.sed`, `SecureInfo_A`, `LocalFriendCodeSeed_B`, etc.
+- The contents of `aes_keys.txt`, or the `STREETPASS_KEYSLOT_2E_FILE` JSON (KeyX/KeyY)
+- Friend codes
+- Received TMP Boxes (they contain other people's Miis, comments and IDs), Mii data / QR codes
+- Captures or logs that reveal a console's MAC address or console ID
 
-- 自分が所有する本体・ソフトのダンプのみを対象とした研究用途のプロジェクトです。
-  このリポジトリには、任天堂の実行コード・コンソール固有の鍵・個人のデータは
-  含まれていません。必要な鍵材料は自分の実機から自分で取り出します
-  ([docs/SETUP.md](docs/SETUP.md) §4)。
-- 任天堂とは無関係の非公式プロジェクトです。
-- Wi-Fiドライバ層は別リポジトリ([derv82/wifit3](https://github.com/derv82/wifit3)、GPLv2)を
-  `tools/wifit3`に別途cloneして使います(本リポジトリには含みません)。
+When asking for help, error messages, the output of `mii_plaza_editor.py verify` (item names
+and OK/NG), and your adapter model and USB ID are enough — nothing sensitive is needed.
+The tests and samples in this repository use **synthetic data**, not raw data from real
+consoles. If you add test data in a PR, please use synthetic data as well.
+
+## License
+
+[MIT License](LICENSE). Feel free to clone, modify and redistribute.
+
+## Notes
+
+- This is a research project intended for consoles and software dumps that you own. The
+  repository contains no Nintendo executable code, no console-specific keys and no personal
+  data; you extract the required key material from your own console yourself
+  ([docs/EN/SETUP.md](docs/EN/SETUP.md) §4).
+- This is an unofficial project and is not affiliated with Nintendo.
+- The Wi-Fi driver layer is a separate repository ([derv82/wifit3](https://github.com/derv82/wifit3),
+  GPLv2) that you clone into `tools/wifit3` yourself (it is not included here).

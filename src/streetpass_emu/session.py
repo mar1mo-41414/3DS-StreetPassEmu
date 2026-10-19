@@ -3,7 +3,7 @@ what to send back for an incoming frame.
 
 Deliberately hardware-independent: handle_frame() is a pure function of
 (current state, incoming frame) -> zero or more outgoing frames. Whatever
-drives the actual RX/TX (see docs/MONITOR_MODE.md) just needs to call it for
+drives the actual RX/TX (see docs/EN/MONITOR_MODE.md) just needs to call it for
 every received frame and inject_frame() each frame it returns, in order.
 
 Scope, :

@@ -1,5 +1,7 @@
 # モニターモードRX/TX層の調査 (wifit3)
 
+> 対応するUSB Wi-Fiアダプタの選び方(偽装MAC対応の確認方法・動作確認表)は[HARDWARE.md](HARDWARE.md)を参照。
+
 `tools/wifit3/`(https://github.com/derv82/wifit3 のクローン、GPLv2)を調査した結果のまとめ。
 このリポジトリ自体は本プロジェクトにコミットしない(`.gitignore`で除外、参考実装として手元に置くのみ)。
 
@@ -49,7 +51,7 @@ Raspberry PiでもMacでも、対応チップセットのUSBアダプタを挿�
   → StreetPassでは自分(PC)が「別の3DSのMACアドレス」になりすます必要がある(§4)ため、
   **`SPOOFABLE`なチップを選ぶ必要がある**。3dbrewの記録通りProbe Response/Action frameは
   ユニキャストでACKが必要になる可能性が高く、ここがハードウェア依存の分岐点になりうる。
-  対応表は `docs/porting/CHIP-DOC.md` 配下の各chip docを要確認(次のステップ)。
+  チップごとの対応は[HARDWARE.md](HARDWARE.md)を参照。
 
 ## 3. フレームパース/構築
 
@@ -69,7 +71,7 @@ READMEに明記: Mini-Driverは「コーディングエージェントがLinux�
 → 新チップを追加するのと同程度の労力で「StreetPass用の送受信ロジック」を既存チップの
 `driver.py`の上に薄く被せることは可能そうだが、**レジスタ書き込みの順序を変えると壊れる
 (read-modify-writeが可換とは限らない)** など、ハードウェア直叩き特有の注意点がある
-(`docs/porting/GOTCHAS.md`参照、要読み込み)。
+(wifit3リポジトリ内の`docs/porting/GOTCHAS.md`参照)。
 
 ## 5. ライセンス
 

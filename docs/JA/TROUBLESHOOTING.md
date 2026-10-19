@@ -7,6 +7,7 @@
 
 | 順 | 確認すること |
 |---|---|
+| 0 | USB Wi-Fiアダプタは**偽装MAC対応**(wifit3の`SPOOFABLE`)か([HARDWARE.md](HARDWARE.md)) |
 | 1 | 3DS本体は**スリープ状態**(蓋を閉じた状態など、すれちがい待ち受け中)か。Wi-Fiが有効で、StreetPass Mii Plazaのすれちがいが有効になっているか |
 | 2 | `STREETPASS_KEYSLOT_2E_FILE`が**実際にPythonプロセスまで届いているか**(`sudo`経由だと引き継がれない、下記A-2) |
 | 3 | 送信するBoxは`mii_plaza_editor.py verify`で`outer HMAC`/`Mii CRC16`/`Mii CCM tag`が**3つ全て`OK`**か |
@@ -15,12 +16,13 @@
 
 ## A. 環境・ドライバ
 
-### A-1. `wlan_ifaces()`が空を返す / `Resource busy`
+### A-1. アダプタが認識されない / 会話が成立しない
 
 | 症状 | 原因と対処 |
 |---|---|
 | `wlan_ifaces()`が空 | チップ非対応、または(Linuxで)USBデバイスノードの権限不足。`lsusb`でVID:PIDを確認し`tools/wifit3`の対応表と照合する。恒久的にsudoなしで使うには[SETUP.md](SETUP.md)の「Linuxでsudo無しで動かす」(udevルール)を適用する |
 | `BringUpPermissionsError: ... Resource busy` | 別プロセスがUSBデバイスを掴んだまま(前回のテストが終了しきっていない等)。`ps aux \| grep streetpass`や`fuser -v /dev/bus/usb/.../...`で該当プロセスを確認して終了させる。`streetpass_loop.py`は自動リトライする |
+| Probe Requestの往復は見えるのに、その先の会話が成立しない | アダプタ(チップ)が**偽装MAC宛のフレームにハードウェアACKを返せない**可能性が高い。「モニターモード対応」だけでは足りず、wifit3の`FAKE_MAC`が`SPOOFABLE`のチップが必要。[HARDWARE.md](HARDWARE.md)参照 |
 | macOSで`libusb-package`のインストールに失敗する | Python 3.14ではwheelが無い。`uv run --python 3.12 ...`のようにPython 3.12を指定する |
 
 ### A-2. 実機のフレームは届いているのに会話が進まない(最頻出)
@@ -29,7 +31,7 @@
 応答しない**。実機からの暗号化フレームは正常に届き、こちらが復号も応答もしないため、
 実機側が延々と再送してタイムアウトする。1時間以上気づけなかった実例がある。
 
-`sudo`は既定で環境変数を引き継がないので、次のどちらかにする:
+`sudo`は既定で環境変数を引き継がないので、環境変数を明示的に渡す:
 
 ```bash
 sudo -E env STREETPASS_KEYSLOT_2E_FILE=/path/to/streetpass_keyslot_2e.json \

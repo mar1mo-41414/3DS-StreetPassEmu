@@ -1,20 +1,25 @@
-# wifit3 (tools/wifit3) がsudo無し・ユーザー権限だけでUSB Wi-Fiアダプタに
+# udev rule that lets wifit3 (tools/wifit3) access USB Wi-Fi adapters directly with
+# plain user privileges, without sudo.
+# wifit3(tools/wifit3)がsudo無し・ユーザー権限だけでUSB Wi-Fiアダプタに
 # 直接アクセスできるようにするudevルール。
 #
-# wifit3はモニターモード(root権限が必要)を使わず、対応チップセットに
-# 直接libusb経由で命令を送ることで3DSすれちがい通信をエミュレートする
-# ツールのため、本来sudoは不要なはず — このルールが無いとUSBデバイス
-# ノードがroot専用パーミッションのままになり、結果的にsudoが必要に
-# 見えてしまう。
+# wifit3 does not use monitor mode (which needs root); it sends commands to supported chipsets
+# directly through libusb, so sudo should not really be necessary -- without this rule the USB
+# device node keeps root-only permissions and sudo merely appears to be required.
+# wifit3はモニターモード(root権限が必要)を使わず、対応チップセットに直接libusb経由で
+# 命令を送るため、本来sudoは不要なはず。このルールが無いとUSBデバイスノードがroot専用の
+# パーミッションのままになり、結果的にsudoが必要に見えてしまう。
 #
-# 対象VID:PIDは tools/wifit3/src/wifit3/chips/*/__init__.py に定義されて
-# いる対応チップセット一覧から抽出(2026-09-15時点)。
+# The VID:PIDs were extracted from the list of supported chipsets defined in
+# tools/wifit3/src/wifit3/chips/*/__init__.py (as of wifit3 commit 45fb760d).
+# 対象VID:PIDは tools/wifit3/src/wifit3/chips/*/__init__.py に定義されている
+# 対応チップセット一覧から抽出(wifit3 コミット 45fb760d 時点)。
 #
-# インストール:
+# Install / インストール:
 #   sudo cp 99-wifit3.rules /etc/udev/rules.d/
 #   sudo udevadm control --reload-rules
 #   sudo udevadm trigger
-#   (自分のユーザーがplugdevグループに入っていることを確認: groups)
+#   (make sure your user is in the plugdev group / 自分のユーザーがplugdevグループに入っていることを確認: groups)
 #
 SUBSYSTEM=="usb", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="ca02", GROUP="plugdev", MODE="0660"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0409", ATTRS{idProduct}=="0408", GROUP="plugdev", MODE="0660"

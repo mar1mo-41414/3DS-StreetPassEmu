@@ -4,7 +4,7 @@ SETUP.mdの範囲を超えて、未解明フィールドの調査や新しいゲ
 
 ## 1. 動的解析環境(HMAC鍵の再確認・新たなフィールドの解析に使う場合)
 
-`docs/PROTOCOL_REFERENCE.md` §8のHMAC鍵は既に判明済みだが、今後さらに
+[PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md) §8のHMAC鍵は既に判明済みだが、今後さらに
 未解明フィールドを調べる場合、同じ手法
 (AzaharPlus + GDB)が使える。必要なもの:
 
@@ -15,13 +15,11 @@ SETUP.mdの範囲を超えて、未解明フィールドの調査や新しいゲ
 - Mii Plazaの暗号化`.app`(実機NANDの`title/00040010/00020800/content/`
   配下、GodMode9等でエクスポート)
 - 実機のCFL_DB.dat(`extdata/00048000/f000000b/00000000/00000005`、
-  `scripts/extract_extdata_file.py`で展開できる参照)を
+  `scripts/extract_extdata_file.py`で展開できる。[SETUP.md](SETUP.md) §4.3参照)を
   AzaharPlusの`nand/data/.../extdata/00048000/F000000B/user/CFL_DB.dat`
   に配置すると、実機の本物のMiiがエミュ上でも使えるようになる
 
-手順の詳細はを参照。
-
-**【重要な制限、2026-09-11判明】** AzaharPlus(Citra系全般)は、CECDの
+**【重要な制限】** AzaharPlus(Citra系全般)は、CECDの
 ような**システムモジュールをLLE(実機バイナリそのまま実行)化する
 仕組みをアーキテクチャ上持っていない**。設定にある`lle_applets`は
 ソフトウェアキーボード等の「アプレット」専用で、システムモジュールには
@@ -49,7 +47,7 @@ cp "$ESSENTIAL/movable.bin"  "$NAND_DIR/private/movable.sed"
 (パスは`AzaharPlus`のソース`src/core/hw/unique_data.cpp`の
 `GetSecureInfoAPath()`等で確認済み)
 
-## 2. 実機 + Rosalina内蔵GDBでの動的解析(2026-09-11に確立)
+## 2. 実機 + Rosalina内蔵GDBでの動的解析
 
 AzaharPlusのHLE実装(CECD等のシステムモジュールは常にAzaharPlus独自の
 再実装で動く、LLE化する仕組みはアーキテクチャ上存在しない——
@@ -104,8 +102,8 @@ GDBスタブが使える。CFWが入った実機3DSが必要。
   「`mrc p15,0,rX,c13,c0,3`でTLSを読み、`str rY,[rX,#0x80]!`でcmdbuf
   base(=rX自身)を確定させ、そこからのオフセットでフィールドを読む」
   という手順を辿ること。手作業のcapstoneトレースは間違いやすい
-  (このセッションで一度、レジスタ`r0`をprogramIdだと誤読したが、
-  実際には「サービスハンドル」であり、programIdは`cmdbuf`内にあった)
+  (レジスタ`r0`をprogramIdだと誤読した例がある。実際には
+  「サービスハンドル」で、programIdは`cmdbuf`内にあった)
 - **静的解析でvtable経由の間接呼び出しに阻まれて呼び出し元が
   分からない場合、ブレークポイントヒット時に`bt`(backtrace)を打てば
   実行時のコールスタックがそのまま見える**。静的クロスリファレンスが
@@ -114,8 +112,7 @@ GDBスタブが使える。CFWが入った実機3DSが必要。
 ### Ghidraでの静的解析(併用)
 
 ```bash
-# .codeの復号・展開(pyctrはniftsの venv に入っている)
-source ~/.venv_all/ninfs/bin/activate
+# .codeの復号・展開(pyctrが入ったPython環境で実行する)
 python3 -c "
 from pyctr.type.ncch import NCCHReader
 from pyctr.type.exefs import decompress_code
@@ -140,7 +137,7 @@ analyzeHeadless /path/to/project ProjectName \
 
 実機のNANDバックアップからMii Plazaの実行コードを取り出す際、
 **バージョン違い(アップデート)が実際に起きていないか、複数の
-バックアップ間でMD5を比較しておく**とよい(2026-09-11、1日違いの
-2つのバックアップで実際に比較し、コード自体は不変だったことを確認済み
-——ただし別のコンテンツ(取扱説明書等)が追加されていたので、
-`content/`配下のファイル一覧だけで「更新なし」と判断しないこと)。
+バックアップ間でMD5を比較しておく**とよい(1日違いの2つのバックアップで
+実際に比較し、コード自体は不変だったことを確認済み——ただし別のコンテンツ
+(取扱説明書等)が追加されていたので、`content/`配下のファイル一覧だけで
+「更新なし」と判断しないこと)。

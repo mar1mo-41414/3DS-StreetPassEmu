@@ -52,7 +52,7 @@ from wifit3.errors import BringUpPermissionsError  # noqa: E402
 sys.path.insert(0, str(_HERE))
 from mii_plaza_editor import TmpBox  # noqa: E402
 
-MII_PLAZA_SERVICE = bytes.fromhex("0002080000")  # docs/PROTOCOL_REFERENCE.md
+MII_PLAZA_SERVICE = bytes.fromhex("0002080000")  # docs/EN/PROTOCOL_REFERENCE.md
 
 
 class _StopRequested(Exception):

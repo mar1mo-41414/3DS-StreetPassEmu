@@ -26,7 +26,7 @@ Usage:
     # Write entry 2 out as a 96-byte FFLStoreData file
     python scripts/extract_console_miis.py extract cfl_db.dat 2 mii_out.bin
 
-See docs/SETUP.md / project findings for how to obtain a CFL_DB.dat
+See docs/EN/SETUP.md / project findings for how to obtain a CFL_DB.dat
 from a NAND dump (extdata/00048000/f000000b/00000000/00000005, itself a
 DIFF container -- extract_extdata_file.py unwraps that layer first).
 """

@@ -9,7 +9,7 @@ just the ones StreetPassResponder reacts to) plus every TX attempt and its
 result, so a run that doesn't reach "established" still leaves something to
 diagnose.
 
-Usage (from the repo root, with tools/wifit3 set up -- see docs/MONITOR_MODE.md):
+Usage (from the repo root, with tools/wifit3 set up -- see docs/EN/MONITOR_MODE.md):
     export STREETPASS_KEYSLOT_2E_FILE=/path/to/your/keyslot_2e.json  # optional, see keyslot_2e.py
     export STREETPASS_FRIEND_CODE_FILE=/path/to/your/friend_code.json  # optional, see friend_code.py
     cd tools/wifit3 && uv run python ../../scripts/live_streetpass_test.py --channel 1 --seconds 30

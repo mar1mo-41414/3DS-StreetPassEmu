@@ -6,7 +6,7 @@ loop-mounted directly (`sudo mount -o loop,ro ctrnand.img mnt/`).
 This is the first step of project findings's "clone -> NAND dump
 -> StreetPassing" pipeline: everything else (own Mii via
 extract_console_miis.py, keyslot 0x2E via GodMode9's AES dump script) reads
-from files inside this decrypted image. See docs/SETUP.md §4 for the full
+from files inside this decrypted image. See docs/EN/SETUP.md §4 for the full
 walkthrough.
 
 Requires, all from the same GodMode9 "essential files" backup

@@ -6,7 +6,7 @@ Scope is deliberately narrow: this module only knows about the pieces needed
 to recognize/build a StreetPass Probe Request's Nintendo tag. General 802.11
 frame construction (radiotap, full management-frame headers) belongs to
 whatever monitor-mode driver layer ends up wrapping this (see
-docs/MONITOR_MODE.md).
+docs/EN/MONITOR_MODE.md).
 """
 
 from __future__ import annotations
@@ -415,7 +415,7 @@ def build_probe_response(
     capability_info: int = 0,
 ) -> bytes:
     """Build a raw Probe Response frame (no radiotap header, no FCS -- see
-    docs/MONITOR_MODE.md for how a Driver.inject_frame() call expects this).
+    docs/EN/MONITOR_MODE.md for how a Driver.inject_frame() call expects this).
 
     Field values beyond the header/IEs (timestamp, beacon_interval,
     capability_info) are not pinned down by any real capture yet -- zero is a reasonable placeholder, override

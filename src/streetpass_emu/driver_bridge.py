@@ -1,9 +1,9 @@
-"""Wires a wifit3 WlanInterface (docs/MONITOR_MODE.md) to StreetPassResponder
+"""Wires a wifit3 WlanInterface (docs/EN/MONITOR_MODE.md) to StreetPassResponder
 (session.py) so the hardware-independent handshake logic can actually run
 against a real monitor-mode-capable Wi-Fi adapter.
 
 Targets ``wifit3.wlan.interface.WlanInterface`` specifically, not the lower
-``chips.driver.Driver`` ABC docs/MONITOR_MODE.md otherwise describes: that's
+``chips.driver.Driver`` ABC docs/EN/MONITOR_MODE.md otherwise describes: that's
 what wifit3's own scripts/campaigns actually build and hand around (see e.g.
 scripts/id/scan.py, campaigns/auth_assoc.py), and its method names differ
 from the raw Driver's (``send_no_wait`` instead of ``inject_frame``,
@@ -100,7 +100,7 @@ class StreetPassDriverBridge:
         assumed = await self.iface.set_fake_mac(mac=self.responder.identity.mac)
         if assumed is None:
             logger.warning("set_fake_mac declined -- this chip can't HW-ACK our chosen identity; "
-                            "continuing RX-only (see docs/MONITOR_MODE.md §2, needs FakeMacSupport.SPOOFABLE)")
+                            "continuing RX-only (see docs/EN/MONITOR_MODE.md §2, needs FakeMacSupport.SPOOFABLE)")
         self.iface.register_rx_callback(self._on_packet)
         self._task = asyncio.create_task(self._run())
         if self.probe_interval_seconds is not None:

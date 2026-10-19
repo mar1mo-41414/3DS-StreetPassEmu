@@ -1,4 +1,4 @@
-"""Mii Plaza StreetPass TMP Boxの汎用編集ツール(docs/PROTOCOL_REFERENCE.md参照)。
+"""Mii Plaza StreetPass TMP Boxの汎用編集ツール(docs/EN/PROTOCOL_REFERENCE.md参照)。
 
 任意の実機キャプチャ(TMP Box body部分、調査結果の構造)を
 入力に取り、あいさつコメント欄の書き換え・重複排除回避用IDのランダム化・
@@ -406,7 +406,7 @@ class TmpBox:
 
     def set_mole_enable(self, enable: bool) -> tuple[int, int]:
         """送信者MiiのFFLStoreData中、`mole`フィールド(offset 0x46、u16 LE、
-        docs/PROTOCOL_REFERENCE.md §9)のbit0(`enable`、2026-09-13訂正済み)
+        docs/EN/PROTOCOL_REFERENCE.md §9)のbit0(`enable`、2026-09-13訂正済み)
         だけを書き換え、CRC16チェックサムを再計算してAES-CCM再暗号化する。
         author_id/mii_id/nickname/その他の顔パーツは一切変更しない。
 
@@ -662,7 +662,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_edit.add_argument("--set-mole", type=lambda s: s.lower() in ("1", "true", "on", "yes"), default=None,
                          metavar="0|1",
                          help="送信者Miiの顔パーツ(mole = ほくろ、offset 0x46 bit0、"
-                              "docs/PROTOCOL_REFERENCE.md §9)だけをON/OFFし、CRC16を"
+                              "docs/EN/PROTOCOL_REFERENCE.md §9)だけをON/OFFし、CRC16を"
                               "再計算(author_id/mii_id/nicknameは一切変更しない、"
                               "調査結果切り分け用、2026-09-16)")
     p_edit.add_argument("--body-header-title", nargs=3, metavar=("TITLE_ID", "TITLE_VERSION", "NAME"), default=None,

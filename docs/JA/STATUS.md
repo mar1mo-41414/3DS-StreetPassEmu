@@ -5,10 +5,22 @@
 送信データのカスタマイズは[CUSTOM.md](CUSTOM.md)、Mii Plaza以外のゲームの
 メッセージ形式は[GAME_FORMATS.md](GAME_FORMATS.md)を参照。
 
-動作確認の環境: 日本版のNintendo 3DS(旧型)、StreetPass Mii Plaza(アップデート版)、
-Linux x86_64およびRaspberry Pi 5(Linuxのモニターモード用USB Wi-Fiアダプタ、
-RTL8812AU/RTL8821AU系)。テスト(`pytest`)はハードウェア不要で全件通る。
-他リージョン・New 3DS・Windowsでの動作は未検証。
+## 前提: このプロジェクトは何をするものか
+
+**手持ちの3DS実機に対して、PCを「仮想のすれちがい相手」として接続する研究用ツール**です。
+3DS本体のエミュレータでも、オンライン中継(StreetPassリレー)でもありません。
+実機の電波の届く範囲で、USB Wi-Fiアダプタ越しに実機と直接会話します。
+
+## 動作確認の環境
+
+- 3DS: 日本版の旧型Nintendo 3DS、StreetPass Mii Plaza(アップデート版)
+- OS: Linux x86_64、Raspberry Pi 5(Linux)、macOS(Apple Silicon)
+- USB Wi-Fiアダプタ: 偽装MAC対応のチップが必須。確認済み機種と、買う前の確認方法は
+  [HARDWARE.md](HARDWARE.md)
+- `pytest`はハードウェア不要で全件通る
+- **未検証**: 他リージョンの本体、New 3DS系、Windows、上記以外のアダプタ
+- 機能ごとに必要なもの(NANDバックアップが要るのは「他のMiiを抽出する」場合だけ)は
+  [SETUP.md](SETUP.md) §0の表を参照
 
 ## 1. できること(再現方法つき)
 
@@ -18,7 +30,7 @@ RTL8812AU/RTL8821AU系)。テスト(`pytest`)はハードウェア不要で全�
 | 2 | 相手が送ってきたTMP Boxを保存し、内容(コメント、送信者Mii、各種ID)の表示とHMAC/CRC16/CCMタグの整合性検証をする | `scripts/mii_plaza_editor.py show <box>` / `verify <box>` |
 | 3 | 送信するTMP Boxの書き換え: あいさつコメント(16文字まで)、通知文言、ヘッダID類、送信者Mii(顔・ニックネーム・識別情報を丸ごと) | [CUSTOM.md](CUSTOM.md) → `scripts/mii_plaza_editor.py edit` |
 | 4 | 書き換えたBoxを実機に送り、Mii広場の「すれちがい」として受理させる。既に会ったことのあるMiiは「n回目」、未知の識別情報(author_id/mii_id)は「初めまして」の新規訪問者として扱われる | [SETUP.md](SETUP.md) §4.7・§6 → `scripts/streetpass_loop.py --outbound-tmp-box-body-template <box>` |
-| 5 | 実機のNANDバックアップだけから材料を取り出す: CTRNANDの復号、共有Miiデータベース(CFL_DB)からの自分のMii/過去に会った相手のMiiの抽出 | [SETUP.md](SETUP.md) §4.1・§4.3 → `scripts/decrypt_ctrnand.py` / `extract_extdata_file.py` / `extract_console_miis.py` |
+| 5 | (NANDバックアップがある場合)NANDバックアップだけから材料を取り出す: CTRNANDの復号、共有Miiデータベース(CFL_DB)からの自分のMii/過去に会った相手のMiiの抽出 | [SETUP.md](SETUP.md) §4.1・§4.3 → `scripts/decrypt_ctrnand.py` / `extract_extdata_file.py` / `extract_console_miis.py` |
 | 6 | Wi-Fi層のCCMP暗号鍵の導出をPC単体・オフラインで行う(実機への問い合わせ不要)。実機のAESキースロット0x2Eの鍵材料を、自分の実機のGodMode9ダンプから用意する前提 | [SETUP.md](SETUP.md) §4.2、[PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md) §3 |
 | 7 | 実機のホームブリュー経由の代替経路: キースロット0x2Eをオラクルとして使う(`homebrew/aes_oracle`)、CECDのSPR経路でメッセージを注入する(`homebrew/spr_inject`) | `homebrew/aes_oracle/README.md`、各ディレクトリのMakefile(devkitARM) |
 | 8 | Mii Plaza以外のゲーム(とびだせ どうぶつの森)のStreetPassメッセージ本文の構造を、静的解析で読み解く(**実機での検証はまだ**) | [GAME_FORMATS.md](GAME_FORMATS.md) |

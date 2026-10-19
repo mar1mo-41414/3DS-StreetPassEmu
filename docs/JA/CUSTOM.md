@@ -1,6 +1,6 @@
 # 送信データのカスタマイズ(`mii_plaza_editor.py`)
 
-[docs/SETUP.md](SETUP.md) §6の②で送信するBoxは、`scripts/mii_plaza_editor.py
+[SETUP.md](SETUP.md) §6の②で送信するBoxは、`scripts/mii_plaza_editor.py
 edit`で自由に書き換えられる。このファイルはその`edit`サブコマンドの
 各オプションを、実用目的別に整理したリファレンス。フィールド構造は[PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md)を参照。
 

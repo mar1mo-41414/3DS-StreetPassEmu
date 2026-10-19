@@ -3,7 +3,7 @@ logic in mii_plaza_editor.py (2026-09-16, user request: 今後、ゲームごと
 自由にデータを書き換えられるようにしたいから、データだけ別枠に切り出す).
 
 So far this project has only reverse-engineered Mii Plaza's own body
-layout (docs/PROTOCOL_REFERENCE.md). The outer CecMessageHeader
+layout (docs/EN/PROTOCOL_REFERENCE.md). The outer CecMessageHeader
 (message_id, sender_id, batch_id, etc.) is a fixed, shared format used by
 every StreetPass-enabled title (confirmed independently by the community
 project NetPass) and stays defined once in
@@ -33,7 +33,7 @@ class GameProfile:
     mii_blob_body_offset: Optional[int] = None
 
 
-# docs/PROTOCOL_REFERENCE.md §7 -- the only game this project has actually
+# docs/EN/PROTOCOL_REFERENCE.md §7 -- the only game this project has actually
 # mapped out. All offsets are body-relative (add total_header_size).
 MII_PLAZA = GameProfile(
     name="Mii Plaza",

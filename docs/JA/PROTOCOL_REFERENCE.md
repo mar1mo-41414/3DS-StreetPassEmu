@@ -39,7 +39,7 @@ USB WiFiアダプタとの通信は `tools/wifit3`(derv82/wifit3、GPLv2、gitig
 本リポジトリにはコミットしない)のユーザーランドドライバ経由。OSのWiFiスタックを
 完全に迂回してUSBチップのレジスタ/ファームウェアへ直接アクセスするため、
 802.11の認証/アソシエーションを前提とする通常のAPモード抽象化(hostapd等)が
-不要になる。詳細は `docs/MONITOR_MODE.md`。
+不要になる。詳細は [MONITOR_MODE.md](MONITOR_MODE.md)、アダプタの選び方は [HARDWARE.md](HARDWARE.md)。
 
 ## 2. 通信フロー
 
@@ -52,7 +52,7 @@ USB WiFiアダプタとの通信は `tools/wifit3`(derv82/wifit3、GPLv2、gitig
    なし)を受信 → 2回目のProbe Responseを返信
 3. 直後、相手から保護802.11 Data frame(CCMP)が届き始める
 4. **SPTCP 3-wayハンドシェイク(SYN→SYN+ACK→ACK)は、SPMTPメッセージを
-   送るたびに毎回必要**(セッションに1回ではない。)
+   送るたびに毎回必要**(セッションに1回ではない)
 5. SPMTP Infoフェーズ: 固定順序
    `0x41→0x42→0x43→0x43→0x11→0x12→0x21→0x22→0x23→0x24→0x31→0x32→0x33→0x34→0x81→0x81`
    (client/master交互、§6参照)
@@ -79,7 +79,7 @@ EXT_IVフラグあり)。
    暗号化 → 出力16バイトがCCMP鍵
    - `normal_key = rol(rol(keyX,2,128) XOR keyY + 0x1FF9E9AAC5FE0408024591DC5D52768A, 87, 128)`
      (`keyscrambler.py`、pyctrの`keygen_manual`と一致する公開の式)
-   - KeyX/KeyYは実機固有(GodMode9でダンプ、§10参照)
+   - KeyX/KeyYは自分の実機のGodMode9ダンプから得る(§10参照)
 
 3つの独立したテストベクタ(実キャプチャ2件+ホームブリューオラクルのテスト
 ベクタ)で完全一致を確認済み。
@@ -89,8 +89,10 @@ EXT_IVフラグあり)。
 - Probe Request/Response: `dot11.py`の`parse_probe_request`/`parse_probe_response`/
   `build_probe_response`
 - Nintendo Vendor Specific IE: OUI `00:1f:32`、type `0x01`(`dot11.build_nintendo_tag`)
-- Action frame(category `0x7f`、OUI `00:1f:32`): **未実装**(送受信自体を実装
-  していない。ペイロード構造は)
+- Action frame(category `0x7f`、OUI `00:1f:32`): 実機が「プローバー役」のとき、
+  こちらのProbe Response後に送ってくる。ペイロードは観測した全例で固定の`00 00`で、
+  同じ内容のAction frameで応答すればよい(`dot11.parse_action_frame` /
+  `build_action_frame`、`session.py`の`handle_frame`)
 
 ## 5. SPTCP(トランスポート層)
 
@@ -225,7 +227,7 @@ u16 userData;          // 0x6E
 
 | body内offset | サイズ | 内容 |
 |---|---|---|
-| 0x0000 (0) | 8B | タイトルID(u64 LE)。offset 8のバージョン・offset 48の表示名とセット(下記、2026-09-15) |
+| 0x0000 (0) | 8B | タイトルID(u64 LE)。offset 8のバージョン・offset 48の表示名とセット(下記) |
 | 0x0008 (8) | 2B | 上記タイトルの**TitleVersion**(u16 LE、`major<<10|minor<<4|micro`)。実機NANDのTMD(`title/00040010/.../content/*.tmd`)の`title_version`とビット単位で一致することを実証済み |
 | 0x000A〜0x002F (10〜47) | 38B | 詳細未解析(既知サンプルでは全てゼロ) |
 | 0x0030 (48) | 16B | 上記タイトルIDの表示名(UTF-16LE、NUL埋め)。実例: `"本体設定"`(v12.0.1)/`"Miiスタジオ"`(v2.1.0) |
@@ -233,12 +235,12 @@ u16 userData;          // 0x6E
 | 0x2038 (8248) | 1152B | 小アイコン、24×24、RGB565、Z-orderタイル |
 | 0x24B8 (9400) | 4608B | 大アイコン、48×48、同フォーマット |
 | 0x36B8〜 | — | 大部分ゼロ |
-| 0x36BC (14012) | 24B | Mii Plaza内蔵Mii DBのヘッダ。magic `"CFPB"`(retail。devは`"CFPN"`)、+0x14にエントリ数(実データは1)。Mii Plazaは受信時にmagicを検証する(2026-09-23) |
+| 0x36BC (14012) | 24B | Mii Plaza内蔵Mii DBのヘッダ。magic `"CFPB"`(retail。devは`"CFPN"`)、+0x14にエントリ数(実データは1)。Mii Plazaは受信時にmagicを検証する |
 | 0x36D4 (14036) | 112B | **送信者Miiの暗号化ブロック**(Mii DBのエントリ0、タグ16バイト込み。§9参照) |
 | 0x37A0 (14240) | 64B×15 | 国名ローカライズ文字列テーブル(UTF-16LE、15言語) |
 | 0x3B60 (15200) | 2B×16 | 対応する内部国/地域コード値(実データは全て`0x2014`固定) |
 | 0x3F60 (16224) | 16B+文字列 | **自己紹介コメント欄**(下記) |
-| 29044〜29200 | 157B | カウンタ/実績値らしき数値列。**独立した4件の実キャプチャ(9/10〜9/15、5日間)でbyte単位で完全に不変**——送信ごとに変わるper-message/per-Mii識別データではなく、送信元コンソールのローカルな使用統計(歩数/Play Coin/内蔵ミニゲーム累積時間等)のスナップショットの可能性が高い |
+| 29044〜29200 | 157B | カウンタ/実績値らしき数値列。**独立した4件の実キャプチャ(5日間)でbyte単位で完全に不変**——送信ごとに変わるper-message/per-Mii識別データではなく、送信元コンソールのローカルな使用統計(歩数/Play Coin/内蔵ミニゲーム累積時間等)のスナップショットの可能性が高い |
 
 ### 自己紹介コメント欄(body offset 16224)
 
@@ -248,16 +250,15 @@ u16 userData;          // 0x6E
 +0x10〜: UTF-16LE文字列、NUL終端(0x0000)
 ```
 
-**2026-09-11、実機の2件のキャプチャで確定**: `+0x00`のu32フィールドは
-**文字数ではない**(コメント`"R8だぞ、Switch2遊べよ。"`(16文字)で14、
-`"あ"`(1文字)で23——文字数と無関係な値が実測された。正体は不明、詳細は
-)。**実際の可視文字列の境界はNUL終端
-(UTF-16LEの0x0000)で正しく判定できる**ことを両キャプチャで確認済み。
+実機の複数のキャプチャで確認: `+0x00`のu32フィールドは**文字数ではない**
+(16文字のコメントで14、1文字のコメントで23——文字数と無関係な値が実測された。
+正体は不明で、[STATUS.md](STATUS.md)の「未解決の課題」に記載)。
+**実際の可視文字列の境界はNUL終端(UTF-16LEの0x0000)で正しく判定できる**。
 
-可変長化は2026-09-11に部分的に解決: **元より短くする書き換えは実装済み**
-(`scripts/mii_plaza_editor.py`、NUL終端方式により後続領域のオフセットを
-一切変えずに済む)。元より長くする拡張は、この欄の本当の最大容量が不明
-なため未対応。
+書き換え(`scripts/mii_plaza_editor.py`)は、NUL終端方式により後続領域のオフセットを
+一切変えずに行える。長さの上限は、実機の入力欄に合わせて**16文字**
+(次の既知構造まで12KB以上の余白があるため、元の文字数に関わらず16文字まで
+伸縮できる)。
 
 ## 8. HMACトレーラー
 
@@ -309,16 +310,16 @@ FFLStoreData(96B) = plaintext88[:12] + nonce + plaintext88[12:]
 ```
 
 QRコード・TMP Box内ブロックとも112バイト(nonce8+ciphertext88+CCM認証タグ16)。
-**2026-09-23訂正**: 以前は「TMP Box内はタグ先頭12バイトのみの108バイト」と
-していたが誤りで、直後の4バイトがタグの残り4バイトだった(無改変の実機Box
-3件で、16バイトのタグ全体が再計算値と一致することを確認)。Mii Plazaは
+**TMP Box内のブロックはタグ先頭12バイトまでの108バイトではない**: 直後の4バイトが
+タグの残り4バイトで、ブロックは全体で112バイト(無改変の実機Box3件で、16バイトの
+タグ全体が再計算値と一致することを確認)。Mii Plazaは
 このブロックをAPT:Unwrap(`0x00470104`、in=0x70/out=0x60/nonceOffset=0xC)
 で復号し**タグ16バイト全体を検証**するため、108バイトだけ書き換えると
 タグ不一致で黙って破棄される。
 
-**【解決済み】認証タグの正しい計算方法**: 当初pycryptodomeで88バイトの
-平文に対しCCM暗号化・タグ計算を試みたところ、暗号文(keystream)は実機と
-一致するのにタグだけ再現できなかった。原因は
+**認証タグの正しい計算方法**: pycryptodomeで88バイトの平文に対しCCM暗号化・
+タグ計算をすると、暗号文(keystream)は実機と一致するのにタグだけ再現できない。
+原因は
 [`KestronProgramming/MiiJS`](https://github.com/KestronProgramming/MiiJS)
 (`miiCrypto.js`、実装は
 [kazuki-4ysのMiiInfoEditorCTR](https://github.com/kazuki-4ys/kazuki-4ys.github.io/blob/148dc339974f8b7515bfdc1395ec1fc9becb68ab/web_apps/MiiInfoEditorCTR/encode.js)
@@ -335,7 +336,7 @@ blob(112B) = nonce(8B) + ciphertext96[:88] + tag16
 末尾8バイトを省いても暗号文の先頭88バイトはたまたま一致してしまうが、
 CCM認証タグはメッセージ長全体(96 vs 88)に依存するため一致しなかった)。
 実機Mii QRコード4枚全てで、無改変での復号→再暗号化がバイト単位で完全に
-元と一致することを確認済み(2026-09-11)。
+元と一致することを確認済み。
 
 ### FFLStoreData構造体(96バイト、WUT/decaf-emu `miidata.h`準拠)
 
@@ -343,7 +344,7 @@ CCM認証タグはメッセージ長全体(96 vs 88)に依存するため一致�
 |---|---|---|
 | 0x00 | 4B | バージョン等ビットフィールド |
 | 0x04 | 8B | `author_id` — Miiを作成したコンソールのID |
-| 0x0C | 10B | `mii_id`(`avatar_id` 4B + `client_id`/deviceHash 6B)。deviceHashは実機の`original_mac`と一致確認済み。**先頭8バイトがAES-CCMのnonceとしてそのまま再利用される**。**2026-09-13訂正**: 先頭4バイトは「flags:4+timestamp:28」ではなく、**先頭バイトの上位4bitが常に`0x9`固定**(残り28bitはほぼ自由)というのが実際の生成規則だった —実機に保存されている本物のmii_id先頭バイトが`0x9d`だったことと、`kazuki-4ys/MiiInfoEditorCTR`の生成コード(`0x90 + random(0,16)`)から確認済み。この制約を満たさない`mii_id`をQRコードとして実機に読ませると「これはMiiのQRコードではありません」と拒否される(`mii_qr.new_mii_id()`で修正済み) |
+| 0x0C | 10B | `mii_id`(`avatar_id` 4B + `client_id`/deviceHash 6B)。deviceHashは実機の`original_mac`と一致確認済み。**先頭8バイトがAES-CCMのnonceとしてそのまま再利用される**。先頭4バイトは「flags:4+timestamp:28」ではなく、**先頭バイトの上位4bitが常に`0x9`固定**(残り28bitはほぼ自由)というのが実際の生成規則 —実機に保存されている本物のmii_id先頭バイトが`0x9d`だったことと、`kazuki-4ys/MiiInfoEditorCTR`の生成コード(`0x90 + random(0,16)`)から確認済み。この制約を満たさない`mii_id`をQRコードとして実機に読ませると「これはMiiのQRコードではありません」と拒否される(`mii_qr.new_mii_id()`で修正済み) |
 | 0x1A | 20B | `mii_name`(UTF-16LE、10文字) |
 | 0x48 | 20B | `creator_name`(UTF-16LE、10文字) |
 | 0x5E | 2B(BE) | `checksum` = CRC16/XMODEM(`data[0:0x5E]`) |
@@ -382,17 +383,17 @@ Kaitai Structスペック
 | 0x40 | 2B(LE u16) | `mouth2`: `mouth_vertical`=bit0-4, `facial_hair_mustache`=bit5-7 |
 | 0x42 | 2B(LE u16) | `beard`: `facial_hair_beard`=bit0-2, `facial_hair_color`=bit3-5, `facial_hair_size`=bit6-9, `facial_hair_vertical`=bit10-14 |
 | 0x44 | 2B(LE u16) | `glasses`: `type`=bit0-3, `color`=bit4-6, `size`=bit7-10, `vertical`=bit11-14 |
-| 0x46 | 2B(LE u16) | `mole`: `size`=bit1-4, `horizontal`=bit5-9, `vertical`=bit10-14, `enable`=**bit0**(2026-09-13訂正、当初bit15としていたのは誤り)。bit15は未使用/常に0と思われる |
+| 0x46 | 2B(LE u16) | `mole`: `size`=bit1-4, `horizontal`=bit5-9, `vertical`=bit10-14, `enable`=**bit0**。bit15は未使用/常に0と思われる |
 
-**注意(2026-09-23解決)**: 以前は「`mii_id`差し替え・本物の別人Miiの埋め込み等、
-このブロックを変更すると実機に無視される」という未解決問題があったが、原因は
-旧実装が108バイトしか書き換えず、タグ末尾4バイトに元のBoxの値が残っていたこと
-だった(Mii Plaza側のタグ検証で破棄)。`mii_plaza_editor.py verify`で
-`Mii CCM tag`を確認できる。詳細は。
+**注意**: `mii_id`の差し替えや別人Miiの埋め込みなど、このブロックを変更したときに
+実機に黙って無視される原因は、108バイトしか書き換えずタグ末尾4バイトに元のBoxの値が
+残っていること(Mii Plaza側のタグ検証で破棄される)。`mii_plaza_editor.py verify`で
+`Mii CCM tag`を確認できる。
 
-### CFL_DB.dat(実機のMiiデータベース本体)の構造(2026-09-23確定)
+### CFL_DB.dat(実機のMiiデータベース本体)の構造
 
-実機の共有extdata`f000000b`(`extdata/00048000/f000000b/00000000/00000005`)の実体は、以下の単純な固定長テーブル:
+実機の共有extdata`f000000b`(`extdata/00048000/f000000b/00000000/00000005`)の実体は、以下の単純な
+固定長テーブル:
 
 ```
 offset 0x00〜0x07: ファイルヘッダ(8バイト、詳細未解析)
