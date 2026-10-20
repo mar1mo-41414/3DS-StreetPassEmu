@@ -39,6 +39,16 @@ need ([REQUIREMENTS.md](REQUIREMENTS.md), [SETUP.md](SETUP.md)):
 - the keyslot 0x2E key file. Pick the `aes_keys.txt` you dumped with GodMode9 in the settings and the GUI
   extracts the two needed lines into a JSON file in the workspace (the values are never shown).
 
+**Friend code (optional)**: type the 12 digits shown on the console's friend list screen straight into the
+settings (dashes optional). The GUI checks the checksum — a typo is refused — and writes the file the loop
+needs itself. Left empty, the PC answers "not a friend".
+
+**Advanced settings** (folded away; the defaults are fine): log every frame, pause between cycles, start-up
+retries, actively searching every N seconds like a real console, matching the Wi-Fi-layer identity to the
+sender Mii (experimental), and regenerating the IDs every cycle. **Other options** is a free field whose
+text is passed to `scripts/streetpass_loop.py` unchanged, for options the switches do not cover (for example
+`--outbound-title-id 0x00020800`); "Show the available options" prints the full list. Normally leave it empty.
+
 "Check setup" tells you which of these is missing; "Check adapters" asks wifit3 which supported adapters
 it can see. The editing tabs work without any of this.
 

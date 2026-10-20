@@ -86,16 +86,37 @@ details summary{cursor:pointer;color:var(--acc2);margin-bottom:8px}
     </div>
     <div class="row">
       <label class="wide"><span data-i="s_keyslot"></span><input type="text" id="s_keyslot_file" class="mono"></label>
-      <label class="wide"><span data-i="s_friend"></span><input type="text" id="s_friend_code_file" class="mono"></label>
+      <label class="wide"><span data-i="s_friend"></span><input type="text" id="s_friend_code" class="mono" placeholder="1234-5678-9012"></label>
     </div>
+    <div class="mut" style="margin:-4px 0 10px" data-i="s_friend_note"></div>
     <div class="row">
       <label class="wide"><span data-i="import_keys"></span><input type="file" id="aesKeysFile" accept=".txt,text/plain"></label>
       <span class="mut" style="flex:2 1 300px" data-i="import_keys_note"></span>
     </div>
-    <div class="row">
-      <label style="flex:2 1 300px;flex-direction:row;align-items:center;gap:8px;color:var(--fg)"><input type="checkbox" id="s_fresh_each_cycle"><span data-i="s_fresh"></span></label>
-      <label class="wide"><span data-i="s_extra"></span><input type="text" id="s_extra_args" class="mono"></label>
-    </div>
+    <details style="margin-bottom:12px">
+      <summary data-i="adv"></summary>
+      <div class="row">
+        <label style="flex:2 1 300px;flex-direction:row;align-items:center;gap:8px;color:var(--fg)"><input type="checkbox" id="s_fresh_each_cycle"><span data-i="s_fresh"></span></label>
+        <label style="flex:2 1 300px;flex-direction:row;align-items:center;gap:8px;color:var(--fg)"><input type="checkbox" id="s_verbose"><span data-i="s_verbose"></span></label>
+      </div>
+      <div class="row">
+        <label class="sm"><span data-i="s_sleep"></span><input type="number" id="s_sleep_between_cycles" min="0" step="0.5"></label>
+        <label class="sm"><span data-i="s_backoff"></span><input type="number" id="s_retry_backoff" min="0" step="0.5"></label>
+        <label class="sm"><span data-i="s_retries"></span><input type="number" id="s_max_retries" min="0"></label>
+        <label class="sm"><span data-i="s_probe"></span><input type="number" id="s_probe_interval" min="0" step="0.5" placeholder="off"></label>
+      </div>
+      <div class="mut" style="margin-bottom:8px" data-i="s_adv_note"></div>
+      <div class="row">
+        <label style="flex:2 1 300px;flex-direction:row;align-items:center;gap:8px;color:var(--fg)"><input type="checkbox" id="s_match_identity"><span data-i="s_match_id"></span></label>
+        <label style="flex:2 1 300px;flex-direction:row;align-items:center;gap:8px;color:var(--fg)"><input type="checkbox" id="s_match_console_id"><span data-i="s_match_con"></span></label>
+      </div>
+      <div class="row">
+        <label class="wide"><span data-i="s_extra"></span><input type="text" id="s_extra_args" class="mono" placeholder="--outbound-title-id 0x00020800"></label>
+        <button class="b sec" id="btnLoopHelp" data-i="s_help"></button>
+      </div>
+      <div class="mut" data-i="s_extra_note"></div>
+      <pre id="loopHelp" class="mono" style="display:none;max-height:260px;overflow:auto;white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:8px"></pre>
+    </details>
     <button class="b" id="btnSaveSettings" data-i="save_settings"></button>
   </div>
   <div class="card">
@@ -247,9 +268,9 @@ run_title:"すれちがいの送受信",cur_mii:"送信するMii",cur_box:"送�
 start:"開始",stop:"停止",adapters:"アダプタを確認",doctor:"準備状況を確認",
 run_note:"実機の3DSをスリープにして近くに置き、開始します。受信したBoxは下の一覧と workspace/received に保存されます。",
 settings:"設定",s_wifit3:"wifit3 のフォルダ",s_channel:"チャンネル",s_cycle:"1回の待ち受け(秒)",s_cycles:"回数(0=無限)",
-s_keyslot:"キースロット0x2Eの鍵ファイル(JSON)",s_friend:"フレンドコードのファイル(任意)",
+s_keyslot:"キースロット0x2Eの鍵ファイル(JSON)",s_friend:"フレンドコード(任意)",s_friend_note:"本体のフレンドリストの画面に出る12桁をそのまま入力できます(ハイフンは有無どちらでも)。空なら「フレンドではない」と答えます。チェックサムが合わない入力は保存できません。",
 import_keys:"aes_keys.txt から鍵ファイルを作る",import_keys_note:"GodMode9で取った aes_keys.txt を選ぶと、必要な2行だけを取り出して workspace に保存します。鍵の値は画面に表示しません。",
-s_fresh:"サイクルごとにメッセージIDとMiiのmii_idを作り直す(送信Miiの識別情報が毎回変わります)",s_extra:"追加の引数(上級者向け)",save_settings:"設定を保存",
+adv:"詳細設定(通常は変えなくて大丈夫)",s_fresh:"サイクルごとにメッセージIDとMiiのmii_idを作り直す(送信Miiの識別情報が毎回変わります)",s_verbose:"全フレームの詳細ログを出す(ログが非常に長くなります)",s_sleep:"サイクル間の待ち(秒)",s_backoff:"起動失敗時の再試行待ち(秒)",s_retries:"起動の再試行回数",s_probe:"自分からも探す間隔(秒)",s_adv_note:"「自分からも探す間隔」は、受信待ちだけでなく実機と同じように自分からも定期的に呼びかけます(空=しない、実験的)。起動の再試行は、USBアダプタが使用中などで立ち上がらないときの待ちと回数です。",s_match_id:"Wi-Fi層の識別情報を送信Miiに合わせる(実験的)",s_match_con:"さらに接続層のIDも送信Miiから導出する(上と併用・実験的)",s_extra:"その他のオプション(コマンドライン形式)",s_help:"使えるオプション一覧を表示",s_extra_note:"上のスイッチに無いオプションを、streetpass_loop.py にそのまま渡せます。例: --outbound-title-id 0x00020800。一覧は右のボタンで表示できます(uvとwifit3が必要)。普通は空で構いません。",save_settings:"設定を保存",
 received:"受信したBox",none:"(なし)",
 mii_cur:"現在のMii",mii_dl:"Miiファイルを保存",mii_clear:"Miiを外す",mii_qr:"QRコード画像から",drop_qr:"Mii QRコードの画像をここにドロップ、または選択",
 qr_note:"Mii作成の「Miiを送る」で作ったQRコードの画像を読み込みます。QRデコーダ(pyzbar / opencv / zbarimg のどれか)が必要です。",
@@ -272,10 +293,10 @@ f_ws:"workspace のファイル",load:"開く",src_new:"新規",kept:"未対応�
 v_hmac:"HMAC",v_crc:"Mii CRC16",v_tag:"Miiタグ",v_none:"Miiが未設定です",
 log_clear:"ログを消す",log_note:"送受信ループの出力がここに流れます。",
 running:"実行中",idle:"停止中",no_mii_set:"(未設定)",box_ready:"作成可能",box_not_ready:"Miiが必要です",
-doc_uv:"uv",doc_wifit3:"wifit3",doc_loop_script:"送受信スクリプト",doc_keyslot_file:"鍵ファイル",doc_friend_code_file:"フレンドコードファイル",
+doc_uv:"uv",doc_wifit3:"wifit3",doc_loop_script:"送受信スクリプト",doc_keyslot_file:"鍵ファイル",doc_friend_code:"フレンドコード(任意)",
 ok:"OK",ng:"未設定/見つからない",saved:"保存しました",done:"反映しました",
 e_no_mii:"先にMiiを選んでください(Mii タブ)",e_comment_too_long:"コメントが長すぎます(最大 {1} 文字)",e_notice_too_long:"通知文が長すぎます(最大 {1} 文字)",
-e_bad_hex:"16進数が正しくありません: {1}",e_bad_length:"長さが正しくありません: {1}({2} バイト)",e_out_of_range:"範囲外の値: {1}",e_bad_number:"数値が正しくありません: {1}",
+e_bad_friend_code:"フレンドコードが正しくありません(12桁で、チェックサムが合う必要があります。入力ミスの可能性)",e_bad_hex:"16進数が正しくありません: {1}",e_bad_length:"長さが正しくありません: {1}({2} バイト)",e_out_of_range:"範囲外の値: {1}",e_bad_number:"数値が正しくありません: {1}",
 e_not_a_box:"TMP Boxとして読めません",e_not_smdh:"SMDHファイルではありません",e_bad_icon_size:"アイコンのサイズが正しくありません",e_bad_data:"データが読めません",
 e_file_not_found:"ファイルが見つかりません",e_no_uv:"uv が見つかりません(SETUP.md §3)",e_no_wifit3:"wifit3 のフォルダが見つかりません(設定を確認)",
 e_no_keyslot_file:"鍵ファイル(JSON)が未設定です。aes_keys.txt から作れます",e_already_running:"すでに実行中です",e_keys_not_found:"aes_keys.txt に slot0x2EKeyX/Y が見つかりません",
@@ -287,9 +308,9 @@ run_title:"StreetPass send / receive",cur_mii:"Sender Mii",cur_box:"Box to send"
 start:"Start",stop:"Stop",adapters:"Check adapters",doctor:"Check setup",
 run_note:"Put your 3DS to sleep next to the PC and press Start. Received boxes appear below and in workspace/received.",
 settings:"Settings",s_wifit3:"wifit3 folder",s_channel:"Channel",s_cycle:"Listen per cycle (s)",s_cycles:"Cycles (0 = forever)",
-s_keyslot:"Keyslot 0x2E key file (JSON)",s_friend:"Friend code file (optional)",
+s_keyslot:"Keyslot 0x2E key file (JSON)",s_friend:"Friend code (optional)",s_friend_note:"Type the 12 digits shown on the console's friend list screen as they are (with or without dashes). Left empty, the answer is \"not a friend\". Input whose checksum is wrong cannot be saved.",
 import_keys:"Create the key file from aes_keys.txt",import_keys_note:"Pick the aes_keys.txt dumped with GodMode9; only the two needed lines are extracted into the workspace. Key values are never shown.",
-s_fresh:"Regenerate message IDs and the Mii's mii_id every cycle (the sender's identity changes each time)",s_extra:"Extra arguments (advanced)",save_settings:"Save settings",
+adv:"Advanced settings (normally leave as is)",s_fresh:"Regenerate message IDs and the Mii's mii_id every cycle (the sender's identity changes each time)",s_verbose:"Log every frame (the log gets very long)",s_sleep:"Pause between cycles (s)",s_backoff:"Retry wait on start-up failure (s)",s_retries:"Start-up retries",s_probe:"Also search actively every (s)",s_adv_note:"\"Also search actively\" makes the PC call out periodically like a real console instead of only listening (empty = off, experimental). The retry settings apply when the USB adapter cannot be brought up, e.g. because it is in use.",s_match_id:"Match the Wi-Fi layer identity to the sender Mii (experimental)",s_match_con:"Also derive the connection-layer IDs from the sender Mii (needs the one above, experimental)",s_extra:"Other options (command-line form)",s_help:"Show the available options",s_extra_note:"Passed to streetpass_loop.py as they are, for options the switches above do not cover, e.g. --outbound-title-id 0x00020800. The button on the right lists them (needs uv and wifit3). Usually leave this empty.",save_settings:"Save settings",
 received:"Received boxes",none:"(none)",
 mii_cur:"Current Mii",mii_dl:"Save Mii file",mii_clear:"Remove Mii",mii_qr:"From a QR code image",drop_qr:"Drop a Mii QR code image here, or choose one",
 qr_note:"Load an image of the QR code made by the Mii Maker's \"Send Miis\". Needs a QR decoder (pyzbar, opencv or zbarimg).",
@@ -312,10 +333,10 @@ f_ws:"Workspace files",load:"Open",src_new:"new",kept:"keeping {1} B of unmodell
 v_hmac:"HMAC",v_crc:"Mii CRC16",v_tag:"Mii tag",v_none:"No Mii yet",
 log_clear:"Clear log",log_note:"Output of the send/receive loop appears here.",
 running:"running",idle:"stopped",no_mii_set:"(not set)",box_ready:"ready",box_not_ready:"needs a Mii",
-doc_uv:"uv",doc_wifit3:"wifit3",doc_loop_script:"loop script",doc_keyslot_file:"key file",doc_friend_code_file:"friend code file",
+doc_uv:"uv",doc_wifit3:"wifit3",doc_loop_script:"loop script",doc_keyslot_file:"key file",doc_friend_code:"friend code (optional)",
 ok:"OK",ng:"not set / not found",saved:"Saved",done:"Applied",
 e_no_mii:"Choose a Mii first (Mii tab)",e_comment_too_long:"Comment too long (max {1} characters)",e_notice_too_long:"Notification too long (max {1} characters)",
-e_bad_hex:"Not valid hex: {1}",e_bad_length:"Wrong length: {1} ({2} bytes)",e_out_of_range:"Out of range: {1}",e_bad_number:"Not a number: {1}",
+e_bad_friend_code:"Invalid friend code (12 digits with a valid checksum; probably a typo)",e_bad_hex:"Not valid hex: {1}",e_bad_length:"Wrong length: {1} ({2} bytes)",e_out_of_range:"Out of range: {1}",e_bad_number:"Not a number: {1}",
 e_not_a_box:"Cannot read this as a TMP Box",e_not_smdh:"Not an SMDH file",e_bad_icon_size:"Wrong icon size",e_bad_data:"Cannot read the data",
 e_file_not_found:"File not found",e_no_uv:"uv not found (SETUP.md §3)",e_no_wifit3:"wifit3 folder not found (check settings)",
 e_no_keyslot_file:"No key file (JSON) set. You can create it from aes_keys.txt",e_already_running:"Already running",e_keys_not_found:"slot0x2EKeyX/Y not found in aes_keys.txt",
@@ -358,9 +379,9 @@ function render(){
   $("runState").innerHTML=S.running?`<span class="ok">${t("running")}</span>`:t("idle");
   $("btnStart").disabled=S.running||!S.verify.built;$("btnStop").disabled=!S.running;
   const st=S.settings;
-  setVal("s_wifit3_dir",st.wifit3_dir);setVal("s_keyslot_file",st.keyslot_file);setVal("s_friend_code_file",st.friend_code_file);
+  setVal("s_wifit3_dir",st.wifit3_dir);setVal("s_keyslot_file",st.keyslot_file);setVal("s_friend_code",st.friend_code);setVal("s_sleep_between_cycles",st.sleep_between_cycles);setVal("s_retry_backoff",st.retry_backoff);setVal("s_max_retries",st.max_retries);setVal("s_probe_interval",st.probe_interval);
   setVal("s_channel",st.channel);setVal("s_cycle_seconds",st.cycle_seconds);setVal("s_cycles",st.cycles);setVal("s_extra_args",st.extra_args);
-  if(document.activeElement!==$("s_fresh_each_cycle"))$("s_fresh_each_cycle").checked=!!st.fresh_each_cycle;
+  ["fresh_each_cycle","verbose","match_identity","match_console_id"].forEach(k=>{const e=$("s_"+k);if(document.activeElement!==e)e.checked=!!st[k]});
   const boxes=S.received;
   $("recvList").innerHTML=boxes.length?`<table>${boxes.map(f=>`<tr><td class="mono">${esc(f.name)}</td><td>${(f.size/1024).toFixed(1)} KB</td><td><button class="b sec" data-load="${esc(f.name)}" data-dir="received" data-as="mii_from_box">${t("use_mii")}</button> <button class="b sec" data-load="${esc(f.name)}" data-dir="received">${t("open_box")}</button></td></tr>`).join("")}</table>`:t("none");
   // mii tab
@@ -406,10 +427,11 @@ function bindField(id,key,num){const e=$(id);e.addEventListener("input",()=>{cle
   try{S=await api("/api/fields",{[key]:num?e.value:e.value});S.__keep=1;renderKeep(id)}catch(x){}},350)})}
 function renderKeep(id){const ae=document.activeElement;render();if(ae&&ae.id===id)ae.focus()}
 [["f_comment","comment"],["f_notice","notice"],["f_app_name","app_name"],["f_app_long","app_long"],["f_app_publisher","app_publisher"],["f_app_title_id","app_title_id"],["f_app_title_version","app_title_version"],["f_counter","counter"],["f_country","country"],["f_region","region"],["f_country_ja","country_ja"],["f_country_en","country_en"],["f_region_ja","region_ja"],["f_region_en","region_en"]].forEach(([i,k])=>bindField(i,k));
-$("btnSaveSettings").onclick=async()=>{await act("/api/settings",{wifit3_dir:$("s_wifit3_dir").value,keyslot_file:$("s_keyslot_file").value,friend_code_file:$("s_friend_code_file").value,channel:+$("s_channel").value,cycle_seconds:+$("s_cycle_seconds").value,cycles:+$("s_cycles").value,fresh_each_cycle:$("s_fresh_each_cycle").checked,extra_args:$("s_extra_args").value},"saved")};
+$("btnSaveSettings").onclick=async()=>{await act("/api/settings",{wifit3_dir:$("s_wifit3_dir").value,keyslot_file:$("s_keyslot_file").value,friend_code:$("s_friend_code").value,channel:+$("s_channel").value,cycle_seconds:+$("s_cycle_seconds").value,cycles:+$("s_cycles").value,fresh_each_cycle:$("s_fresh_each_cycle").checked,verbose:$("s_verbose").checked,sleep_between_cycles:+$("s_sleep_between_cycles").value,retry_backoff:+$("s_retry_backoff").value,max_retries:+$("s_max_retries").value,probe_interval:$("s_probe_interval").value,match_identity:$("s_match_identity").checked,match_console_id:$("s_match_console_id").checked,extra_args:$("s_extra_args").value},"saved")};
 $("btnStart").onclick=async()=>{await $("btnSaveSettings").onclick();await act("/api/run/start",{})};
 $("btnStop").onclick=()=>act("/api/run/stop",{});
 $("btnAdapters").onclick=async()=>{try{const r=await api("/api/run/adapters",{});$("doctorOut").textContent=r.text||"(no output)"}catch(e){}};
+$("btnLoopHelp").onclick=async()=>{try{const r=await api("/api/run/help",{});const p=$("loopHelp");p.textContent=r.text||"(no output)";p.style.display="block"}catch(e){}};
 $("btnDoctor").onclick=async()=>{try{const r=await api("/api/doctor");$("doctorOut").innerHTML=r.map(x=>`<div><span class="${x.ok?"ok":"bad"}">${x.ok?"✓":"✗"}</span> ${t("doc_"+x.name)} ${x.ok?"":`<span class="mut">${t("ng")}</span>`} ${x.detail&&x.ok?`<span class="mono">${esc(x.detail)}</span>`:""}</div>`).join("")}catch(e){}};
 $("aesKeysFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;await act("/api/keys/import",{data:b64(await readFile(f))},"saved");e.target.value=""};
 async function miiFromQr(f){await act("/api/mii",{action:"qr",data:b64(await readFile(f))},"done")}

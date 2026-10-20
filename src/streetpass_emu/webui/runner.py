@@ -24,11 +24,18 @@ SETTINGS_FILE = "settings.json"
 DEFAULT_SETTINGS = {
     "wifit3_dir": "tools/wifit3",
     "keyslot_file": "",
-    "friend_code_file": "",
+    "friend_code": "",
     "channel": 1,
     "cycle_seconds": 120,
     "cycles": 0,
     "fresh_each_cycle": False,
+    "verbose": False,
+    "sleep_between_cycles": 2.0,
+    "retry_backoff": 5.0,
+    "max_retries": 5,
+    "probe_interval": "",
+    "match_identity": False,
+    "match_console_id": False,
     "extra_args": "",
     "lang": "",
 }
@@ -54,15 +61,32 @@ class Runner:
     # ---- settings (paths and numbers only; never key material) -------------------------------
     def load_settings(self) -> None:
         try:
-            self.settings.update(json.loads((self.workspace / SETTINGS_FILE).read_text()))
+            saved = json.loads((self.workspace / SETTINGS_FILE).read_text())
+            self.settings.update({k: v for k, v in saved.items() if k in DEFAULT_SETTINGS})
         except (OSError, ValueError):
             pass
 
     def save_settings(self, new: dict) -> None:
+        if "friend_code" in new:
+            new = dict(new, friend_code=self._clean_friend_code(new["friend_code"]))
         for k in DEFAULT_SETTINGS:
             if k in new:
                 self.settings[k] = new[k]
         (self.workspace / SETTINGS_FILE).write_text(json.dumps(self.settings, ensure_ascii=False, indent=2))
+
+    @staticmethod
+    def _clean_friend_code(text: str) -> str:
+        """'' (none) or a valid friend code written as 1234-5678-9012; anything else is refused."""
+        text = (text or "").strip()
+        if not text:
+            return ""
+        from ..spmtp import friend_code_value_from_string
+        try:
+            value = friend_code_value_from_string(text)
+        except ValueError as e:
+            raise RunnerError("bad_friend_code") from e
+        d = f"{value:012d}"
+        return f"{d[:4]}-{d[4:8]}-{d[8:]}"
 
     # ---- log ----------------------------------------------------------------------
     def log(self, line: str) -> None:
@@ -87,8 +111,10 @@ class Runner:
         env = dict(os.environ)
         if self.settings["keyslot_file"]:
             env["STREETPASS_KEYSLOT_2E_FILE"] = str(Path(self.settings["keyslot_file"]).expanduser())
-        if self.settings["friend_code_file"]:
-            env["STREETPASS_FRIEND_CODE_FILE"] = str(Path(self.settings["friend_code_file"]).expanduser())
+        if self.settings["friend_code"]:
+            f = self.workspace / "friend_code.json"
+            f.write_text(json.dumps({"friend_code": self.settings["friend_code"]}))
+            env["STREETPASS_FRIEND_CODE_FILE"] = str(f)
         return env
 
     def doctor(self) -> list[dict]:
@@ -102,9 +128,9 @@ class Runner:
         add("uv", shutil.which("uv") is not None, shutil.which("uv") or "")
         add("wifit3", (w / "pyproject.toml").exists(), str(w))
         add("loop_script", (self.repo / "scripts" / "streetpass_loop.py").exists())
-        for key, label in (("keyslot_file", "keyslot_file"), ("friend_code_file", "friend_code_file")):
-            v = self.settings[key]
-            add(label, bool(v) and Path(v).expanduser().exists(), "" if not v else Path(v).name)
+        v = self.settings["keyslot_file"]
+        add("keyslot_file", bool(v) and Path(v).expanduser().exists(), "" if not v else Path(v).name)
+        add("friend_code", bool(self.settings["friend_code"]))  # optional: nothing set = "not a friend"
         return out
 
     def list_adapters(self) -> str:
@@ -116,6 +142,18 @@ class Runner:
             raise RunnerError("no_wifit3")
         p = subprocess.run(["uv", "run", "python", "-c",
                             "from wifit3.device.manager import wlan_ifaces; print(wlan_ifaces())"],
+                           cwd=w, capture_output=True, text=True, timeout=180)
+        return (p.stdout + p.stderr).strip()
+
+    def loop_help(self) -> str:
+        """The command line options of streetpass_loop.py (for the "extra options" field)."""
+        w = self._wifit3()
+        if not shutil.which("uv"):
+            raise RunnerError("no_uv")
+        if not (w / "pyproject.toml").exists():
+            raise RunnerError("no_wifit3")
+        p = subprocess.run(["uv", "run", "--with", "pycryptodome", "python", str(self.repo / "scripts" / "streetpass_loop.py"),
+                            "--help"],
                            cwd=w, capture_output=True, text=True, timeout=180)
         return (p.stdout + p.stderr).strip()
 
@@ -137,12 +175,19 @@ class Runner:
             raise RunnerError("no_keyslot_file")
         box = self.workspace / "outbound.bin"
         box.write_bytes(box_bytes)
-        cmd = ["uv", "run", "python", str(self.repo / "scripts" / "streetpass_loop.py"),
+        cmd = ["uv", "run", "--with", "pycryptodome", "python", str(self.repo / "scripts" / "streetpass_loop.py"),
                "--channel", str(int(s["channel"])), "--cycle-seconds", str(float(s["cycle_seconds"])),
                "--cycles", str(int(s["cycles"])), "--out-dir", str(self.workspace / "received"),
                "--outbound-tmp-box-body-template", str(box)]
-        if s["fresh_each_cycle"]:
-            cmd.append("--fresh-each-cycle")
+        cmd += ["--sleep-between-cycles", str(float(s["sleep_between_cycles"])),
+                "--retry-backoff", str(float(s["retry_backoff"])), "--max-retries", str(int(s["max_retries"]))]
+        if str(s["probe_interval"]).strip():
+            cmd += ["--probe-interval-seconds", str(float(s["probe_interval"]))]
+        for key, flag in (("fresh_each_cycle", "--fresh-each-cycle"), ("verbose", "--verbose"),
+                          ("match_identity", "--match-identity-to-mii"),
+                          ("match_console_id", "--match-console-id-to-mii")):
+            if s[key]:
+                cmd.append(flag)
         if s["extra_args"].strip():
             import shlex
             cmd += shlex.split(s["extra_args"])

@@ -102,6 +102,8 @@ class App:
                     r.start(e.build())
                 elif path == "/api/run/stop":
                     r.stop()
+                elif path == "/api/run/help":
+                    return 200, {"text": r.loop_help()}
                 elif path == "/api/run/adapters":
                     return 200, {"text": r.list_adapters()}
                 elif path == "/api/log/clear":

@@ -191,3 +191,63 @@ def test_start_without_setup_gives_a_clear_error(gui):
     assert st == 400 and err["error"] in ("no_uv", "no_wifit3", "no_keyslot_file")
     st, s = call("/api/run/stop", {})
     assert st == 200 and s["running"] is False
+
+
+# ---- settings: friend code and loop options ------------------------------------------------------
+def _valid_friend_code() -> str:
+    from streetpass_emu.spmtp import principal_id_checksum
+    pid = 305419896
+    return f"{(principal_id_checksum(pid) << 32) | pid:012d}"
+
+
+def test_friend_code_is_typed_directly_and_validated(gui, tmp_path):
+    app, call = gui
+    d = _valid_friend_code()
+    st, s = call("/api/settings", {"friend_code": f" {d[:4]} {d[4:8]}{d[8:]} "})
+    assert st == 200 and s["settings"]["friend_code"] == f"{d[:4]}-{d[4:8]}-{d[8:]}"
+    st, err = call("/api/settings", {"friend_code": "1234-5678-9012"})
+    assert st == 400 and err["error"] == "bad_friend_code"
+    assert app.runner.settings["friend_code"] == f"{d[:4]}-{d[4:8]}-{d[8:]}"   # the bad one was not stored
+    assert call("/api/settings", {"friend_code": ""})[1]["settings"]["friend_code"] == ""
+
+
+def test_start_builds_the_command_and_friend_code_file(gui, monkeypatch, tmp_path):
+    from streetpass_emu.webui import runner as runner_mod
+    app, call = gui
+    call("/api/mii", {"action": "file", "data": b64(MII)})
+    wifit3 = tmp_path / "w3"
+    wifit3.mkdir()
+    (wifit3 / "pyproject.toml").write_text("")
+    keyfile = tmp_path / "k.json"
+    keyfile.write_text("{}")
+    d = _valid_friend_code()
+    call("/api/settings", {"wifit3_dir": str(wifit3), "keyslot_file": str(keyfile), "friend_code": d,
+                           "channel": 6, "cycle_seconds": 30, "verbose": True, "probe_interval": "5",
+                           "match_identity": True, "extra_args": "--outbound-title-id 0x00020800"})
+    seen = {}
+
+    class FakeProc:
+        stdout = iter(["hello\n"])
+        pid = 1
+
+        def poll(self):
+            return 0
+
+        def wait(self, timeout=None):
+            return 0
+
+    def fake_popen(cmd, **kw):
+        seen["cmd"], seen["env"], seen["cwd"] = cmd, kw["env"], kw["cwd"]
+        return FakeProc()
+
+    monkeypatch.setattr(runner_mod.shutil, "which", lambda _n: "/usr/bin/uv")
+    monkeypatch.setattr(runner_mod.subprocess, "Popen", fake_popen)
+    assert call("/api/run/start", {})[0] == 200
+    cmd = seen["cmd"]
+    assert cmd[:5] == ["uv", "run", "--with", "pycryptodome", "python"] and seen["cwd"] == wifit3
+    for flag in ("--verbose", "--match-identity-to-mii", "--probe-interval-seconds", "--outbound-title-id"):
+        assert flag in cmd
+    assert cmd[cmd.index("--channel") + 1] == "6" and "--fresh-each-cycle" not in cmd
+    ff = Path(seen["env"]["STREETPASS_FRIEND_CODE_FILE"])
+    assert json.loads(ff.read_text()) == {"friend_code": f"{d[:4]}-{d[4:8]}-{d[8:]}"}
+    assert seen["env"]["STREETPASS_KEYSLOT_2E_FILE"] == str(keyfile)
