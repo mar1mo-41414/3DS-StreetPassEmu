@@ -34,6 +34,8 @@ console, within radio range, through a USB Wi-Fi adapter.
 | 6 | Derive the Wi-Fi-layer CCMP key on the PC alone, offline (no queries to the console). Assumes you prepare the AES keyslot 0x2E key material from your own console with GodMode9 | [SETUP.md](SETUP.md) §4.2, [PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md) §3 |
 | 7 | Alternative homebrew-based routes on the console: use keyslot 0x2E as an oracle (`homebrew/aes_oracle`), or inject a message through CECD's SPR path (`homebrew/spr_inject`) | `homebrew/aes_oracle/README.md`, the Makefile in each directory (devkitARM) |
 | 8 | Decode the structure of the StreetPass message body of a game other than Mii Plaza (Animal Crossing: New Leaf) by static analysis (**not yet verified on a real console**) | [GAME_FORMATS.md](GAME_FORMATS.md) |
+| 9 | **Generate a TMP Box from scratch** (no genuine box as a template): builds the header, TLVs, body and HMAC, with icon-image / SMDH import (**not yet verified on a real console; accepted in the emulator**) | [CUSTOM.md](CUSTOM.md) → `scripts/build_tmp_box.py` |
+| 10 | Run a box through Mii Plaza in an emulator to see whether it is **accepted**, with no console. Also tells which regions of the box acceptance depends on | [EMULATOR_TEST.md](EMULATOR_TEST.md) → `scripts/emu_receiver_test.py` / `emu_bisect_box.py` |
 
 ### Conditions for outgoing data to be accepted (Mii Plaza)
 
@@ -54,9 +56,11 @@ nothing appears in Mii Plaza). This was the pitfall that took the longest to fin
   of Animal Crossing: New Leaf is known from static analysis, but confirming it against data
   captured from a real console and integrating it into this project's send path (advertising a
   different title ID as a service) are not implemented.
-- **Building a TMP Box from scratch**: there is no feature that generates the whole box (header,
-  icon, country-name table, ...) on its own. Only the approach of rewriting a genuine box
-  received from a real console as a template ([SETUP.md](SETUP.md) §4.6).
+- **Confirming a from-scratch box on a real console**: the builder (`build_tmp_box.py`) exists
+  and Mii Plaza in the emulator accepts its output, but it has not been tried on real hardware.
+  The areas it does not fill (console-specific records, statistics) are all zero, so the visitor
+  may look sparser. The sender Mii must still be an existing 96-byte FFLStoreData; there is no
+  feature to synthesize a new Mii.
 - **Extracting your own friend code from the NAND backup automatically**: the Friend List
   save data embeds a 3DS-specific save-data filesystem that is not analyzed. Check it on the
   console screen and set it by hand (it is not required for StreetPass to work).
@@ -84,10 +88,10 @@ Priority is split into "worth tackling next" and "investigate only if it causes 
 
 | Problem | Summary |
 |---|---|
-| The leading u32 of the comment field | Confirmed not to be the character count. A hypothesis is that it encodes the combination of facial expression and speech-bubble shape; unverified. Reading and writing the comment works with NUL-termination detection |
+| The leading u32 and following bytes of the comment field | The leading u32 is a clamped, monotonically increasing counter (not a character count). The small bytes after it (`+0x06`–`+0x09`) may be enumerations such as expression / speech bubble; unverified. Reading and writing the comment works with NUL-termination detection |
 | Unexplained parts of `IdentityPacket` | The meaning of the 8 bytes of `timestamp` after the first 4 (year/month/day) is unknown |
 | Generation rule for consoleID / MAC address | The rule is unknown. Random values are used instead, with no problems when talking to real consoles |
-| Start of the TMP Box body | About 38 bytes after the leading triple of title ID / version / display name (the title that last set the sender's Mii) are unanalyzed |
+| Start of the TMP Box body | The leading triple (title ID / version / display name of the title that last set the sender's Mii) is understood, followed by two constants (`1`, `0x80`) at +0x10 whose meaning is unknown; the display name is the first entry of the SMDH title table |
 | Statistics area at the end of the TMP Box body | Looks like a snapshot of the source console's local usage statistics (play times / counts); the individual values are undecoded. Unrelated to acceptance |
 | Flags of `CecMessageHeader` | Randomizing all of them was confirmed not to affect acceptance or display. Individual meanings are unknown |
 | Mismatch between the "first meeting" popup and the "n-th meeting" counter on the detail screen | Hypothesis: separate per-message and per-Mii counters. Unverified |

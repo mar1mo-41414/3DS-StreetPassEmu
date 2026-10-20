@@ -233,31 +233,43 @@ real data:
 |---|---|---|
 | 0x0000 (0) | 8B | Title ID (u64 LE). Forms a set with the version at offset 8 and the display name at offset 48 (below) |
 | 0x0008 (8) | 2B | The **TitleVersion** (u16 LE, `major<<10|minor<<4|micro`) of that title. Shown to match, bit for bit, the `title_version` in the console's NAND TMD (`title/00040010/.../content/*.tmd`) |
-| 0x000A–0x002F (10–47) | 38B | Not analyzed in detail (all zero in the known samples) |
-| 0x0030 (48) | 16B | Display name of that title ID (UTF-16LE, NUL-padded). Examples: `"本体設定"` (System Settings, v12.0.1) / `"Miiスタジオ"` (Mii Maker, v2.1.0) |
-| 0x0040–0x2038 | — | Almost all zero (reserved) |
+| 0x0010 (16) | 8B | u32 `1` + u32 `0x80` (constants, identical in every sample) |
+| 0x0030 (48) | 0x2000B | **The SMDH Title[16] array** (16 languages × 0x200B: short name 0x80 / long name 0x100 / publisher 0x80, UTF-16LE; order: JA, EN, FR, DE, IT, ES, zh-CN, KO, NL, PT, RU, zh-TW, 4 reserved). The short name of the first entry is the display name that goes with the title ID and version above (examples: `"本体設定"` (System Settings, v12.0.1) / `"Miiスタジオ"` (Mii Maker, v2.1.0)) |
 | 0x2038 (8248) | 1152B | Small icon, 24×24, RGB565, Z-order tiling |
 | 0x24B8 (9400) | 4608B | Large icon, 48×48, same format |
-| 0x36B8– | — | Mostly zero |
+| 0x36B8 (14008) | 4B | u32 `0x100` (constant) |
 | 0x36BC (14012) | 24B | Header of Mii Plaza's built-in Mii DB. magic `"CFPB"` (retail; dev is `"CFPN"`), entry count at +0x14 (1 in the real data). Mii Plaza verifies the magic on receipt |
 | 0x36D4 (14036) | 112B | **The sender Mii's encrypted block** (entry 0 of the Mii DB, including the 16-byte tag; see §9) |
-| 0x37A0 (14240) | 64B×15 | Country-name localization string table (UTF-16LE, 15 languages) |
-| 0x3B60 (15200) | 2B×16 | The corresponding internal country/region code values (all `0x2014` in the real data) |
+| 0x375C (14172) | 4B | **Residence code**: +2 = region (prefecture) code, +3 = country code (1 = Japan). A region code of `1` means "region not set": the region names are replaced by a placeholder character |
+| 0x3760 (14176) | 0x40B×16 | **Country name** strings per language (UTF-16LE, 16 languages). The receiver shows the entry for the *viewer's* console language. The u16 at the end of each entry is zeroed on receipt |
+| 0x3B60 (15200) | 0x40B×16 | **Region (prefecture) name** strings per language (same format; e.g. `福岡県` / `Fukuoka` / `福冈县` ...) |
 | 0x3F60 (16224) | 16B+string | **Greeting comment field** (below) |
-| 29044–29200 | 157B | A sequence of numbers that looks like counters / achievements. **Byte-for-byte identical across four independent real captures taken over five days** — so it's not per-message / per-Mii identification data that changes with each send, but most likely a snapshot of the source console's local usage statistics (steps / Play Coins / cumulative play time of built-in mini-games, etc.) |
+| 0x4484 (17540) | 10B | A copy of the Mii's `mii_id` (not checked by the receiver) |
+| 0x4250–0x6240 | — | A series of small records specific to the sending console (3–5 bytes each at a 0x44-byte stride, etc.). **Not validated by the receiver and not needed for acceptance** (confirmed by zeroing). Purpose unknown (presumably mini-game data) |
+| 0x7176–0x720F | ~157B | A sequence of numbers that looks like counters / achievements. **Unchanged across independent real captures from the same console.** Most likely a snapshot of the source console's local usage statistics. Unrelated to acceptance |
+
+**What acceptance really needs** (experiments with Mii Plaza in an emulator, [EMULATOR_TEST.md](EMULATOR_TEST.md)):
+the message header (+TLVs), the first 0x30 bytes of the body, and a **valid sender Mii** (correct
+CRC16 and 16-byte CCM tag). Icons, the multilingual titles, country/region names, the comment, the
+console-specific areas above and the statistics can all be zero and the box is still accepted
+(the visitor just lacks that information on screen).
 
 ### Greeting comment field (body offset 16224)
 
 ```
-+0x00 (4B): u32 unk_field  -- not the character count (see below)
-+0x04 – +0x0F: reserved (12 bytes; confirmed to hold non-zero values, undecoded)
++0x00 (4B): u32 counter  -- not the character count. The receiver clamps it to 999,999. On a real
+                             console it grew monotonically across days (14 → 23 → 27), so it looks
+                             like an encounter counter
++0x04 (2B): u16 (clamped to 3000)
++0x06 – +0x0B: small byte values (+0x06 is checked against a lookup table, +0x07 is clamped to 2,
+               +0x08 to 19, +0x09 to 27; possibly enumerations such as expression / balloon, unconfirmed)
++0x0C – +0x0F: reserved
 +0x10–: UTF-16LE string, NUL-terminated (0x0000)
 ```
 
 Confirmed across several real captures: the u32 at `+0x00` is **not the character count**
 (it measured 14 for a 16-character comment and 23 for a 1-character comment — a value unrelated
-to the length. Its meaning is unknown and is listed under "Open problems" in
-[STATUS.md](STATUS.md)). **The real boundary of the visible string can be determined correctly
+to the length. Analysis of the receiving code shows it is a clamped, monotonically increasing counter). **The real boundary of the visible string can be determined correctly
 by the NUL terminator (UTF-16LE 0x0000).**
 
 Rewriting (`scripts/mii_plaza_editor.py`) can be done without changing the offsets of any

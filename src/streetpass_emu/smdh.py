@@ -87,3 +87,30 @@ def build_title_table(titles: List[Title]) -> bytes:
         raise ValueError(f"at most {TITLE_COUNT} titles, got {len(titles)}")
     padded = titles + [titles[-1]] * (TITLE_COUNT - len(titles))
     return b"".join(build_title(t) for t in padded)
+
+
+SMDH_MAGIC = b"SMDH"
+SMDH_TITLES_OFFSET = 0x08
+SMDH_SMALL_ICON_OFFSET = 0x2040   # 24x24 RGB565, 0x480 bytes
+SMDH_LARGE_ICON_OFFSET = 0x24C0   # 48x48 RGB565, 0x1200 bytes
+SMDH_SIZE = 0x36C0
+
+
+@dataclass(frozen=True)
+class Smdh:
+    titles: List[Title]
+    small_icon: bytes
+    large_icon: bytes
+
+
+def parse_smdh(data: bytes) -> Smdh:
+    """Reads a standalone .smdh file (or the icon/banner block of a title). The Title[16] array and
+    the two icon bitmaps are what a Mii Plaza StreetPass box carries (the 0x30-byte settings block
+    in between is not part of the box)."""
+    if len(data) < SMDH_SIZE or data[:4] != SMDH_MAGIC:
+        raise ValueError("not an SMDH file")
+    return Smdh(
+        titles=parse_title_table(data[SMDH_TITLES_OFFSET:SMDH_TITLES_OFFSET + TITLE_TABLE_SIZE]),
+        small_icon=bytes(data[SMDH_SMALL_ICON_OFFSET:SMDH_SMALL_ICON_OFFSET + 0x480]),
+        large_icon=bytes(data[SMDH_LARGE_ICON_OFFSET:SMDH_LARGE_ICON_OFFSET + 0x1200]),
+    )

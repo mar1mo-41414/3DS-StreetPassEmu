@@ -25,6 +25,9 @@ your real console, within radio range, through a USB Wi-Fi adapter.
   nickname and identity IDs — the whole thing). The real console's Mii Plaza shows the result
   as "first meeting" or "n-th meeting"
 - Extract other Miis stored on the console (people you met before, etc.) from a NAND backup
+- Build a message from scratch (no genuine box as a template), and check whether Mii Plaza accepts
+  a message by running it through the game in an emulator — no console needed (real-console
+  confirmation of from-scratch boxes is still pending)
 - Documented message formats for a non-Mii-Plaza game (Animal Crossing: New Leaf; static
   analysis only — not yet verified or sent to a real console)
 
@@ -37,6 +40,7 @@ item, see **[docs/EN/STATUS.md](docs/EN/STATUS.md)**.
 |---|---|
 | Meet a real 3DS and receive/save its messages | A CFW 3DS (`aes_keys.txt` dumped with GodMode9) and a spoofed-MAC-capable USB Wi-Fi adapter. **No NAND backup needed** |
 | Take a received box as a template and rewrite the comment / notification text / use a different Mii | Same as above |
+| Build a box from scratch, or check whether Mii Plaza would accept a box (in an emulator, no console) | Python only for building; an emulator test also needs your own Mii Plaza dump → [docs/EN/EMULATOR_TEST.md](docs/EN/EMULATOR_TEST.md) |
 | Extract other Miis stored on the console (people you met, etc.) and send them | The above **plus a NAND backup** (and `boot9.bin`, `otp.bin`) |
 
 Supported environment: Linux (including Raspberry Pi) or macOS, Python 3.10+. Windows is untested.
@@ -62,7 +66,8 @@ message, then rewriting and sending — is in **[docs/EN/SETUP.md](docs/EN/SETUP
 | [docs/EN/HARDWARE.md](docs/EN/HARDWARE.md) | Choosing a USB Wi-Fi adapter (how to check spoofed-MAC support), verified-hardware table |
 | [docs/EN/SETUP.md](docs/EN/SETUP.md) | From `git clone` to meeting a real console |
 | [docs/EN/TROUBLESHOOTING.md](docs/EN/TROUBLESHOOTING.md) | Symptom-based diagnosis |
-| [docs/EN/CUSTOM.md](docs/EN/CUSTOM.md) | Customizing outgoing data (`mii_plaza_editor.py`) |
+| [docs/EN/CUSTOM.md](docs/EN/CUSTOM.md) | Customizing outgoing data (`mii_plaza_editor.py`) and building a box from scratch (`build_tmp_box.py`) |
+| [docs/EN/EMULATOR_TEST.md](docs/EN/EMULATOR_TEST.md) | Checking a box with Mii Plaza in an emulator, without a console |
 | [docs/EN/PROTOCOL_REFERENCE.md](docs/EN/PROTOCOL_REFERENCE.md) | Confirmed protocol and data-format specification |
 | [docs/EN/GAME_FORMATS.md](docs/EN/GAME_FORMATS.md) | How Mii Plaza accepts a visitor; Animal Crossing: New Leaf message formats |
 | [docs/EN/MONITOR_MODE.md](docs/EN/MONITOR_MODE.md) | Wi-Fi layer (monitor mode) design |

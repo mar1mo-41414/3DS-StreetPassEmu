@@ -97,3 +97,17 @@ def test_build_title_table_rejects_more_than_16():
 def test_build_title_table_rejects_empty():
     with pytest.raises(ValueError):
         build_title_table([])
+
+
+def test_parse_smdh_reads_titles_and_icons():
+    from streetpass_emu.smdh import SMDH_SIZE, Title, build_title_table, parse_smdh
+    data = bytearray(SMDH_SIZE)
+    data[:4] = b"SMDH"
+    data[8:8 + 0x2000] = build_title_table([Title("名", "long", "pub")])
+    data[0x2040:0x2040 + 0x480] = b"\x11" * 0x480
+    data[0x24C0:0x24C0 + 0x1200] = b"\x22" * 0x1200
+    s = parse_smdh(bytes(data))
+    assert s.titles[0] == Title("名", "long", "pub") and len(s.titles) == 16
+    assert s.small_icon == b"\x11" * 0x480 and s.large_icon == b"\x22" * 0x1200
+    with pytest.raises(ValueError):
+        parse_smdh(bytes(SMDH_SIZE))

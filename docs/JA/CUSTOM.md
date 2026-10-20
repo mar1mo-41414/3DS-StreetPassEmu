@@ -13,6 +13,23 @@ python scripts/mii_plaza_editor.py verify <出力.bin>   # 送信前に必ず確
 いることを確認してから送信すること。どれか1つでも`NG`だと実機に無言で
 拒否される。
 
+## 雛形なしでゼロから作る
+
+雛形にできる本物のBoxが手元に無いときは、`scripts/build_tmp_box.py`で生成できます:
+
+```bash
+python scripts/build_tmp_box.py --mii my_mii.bin --comment "こんにちは" -o box.bin
+# 任意: --smdh app.smdh | --title 名前 | --large-icon img.png --small-icon img.png \
+#       --header-icon img.png | --country 1 --region 41 | --counter N
+```
+
+`--mii`は生の96バイトFFLStoreData、または112バイトの暗号化Mii blob/MiiQRペイロード。ヘッダ・
+TLV・本文・HMACトレーラーを生成し、Mii Plazaが必要とする部分だけを埋めます
+([PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md)参照)。それ以外はゼロです。画像はアイコンの
+サイズに縮小されます(Pillowが必要)。出来たBoxは[EMULATOR_TEST.md](EMULATOR_TEST.md)で実機なしに
+確認でき、`mii_plaza_editor.py edit`もそのまま適用できます。コードからは
+`streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`。**実機ではまだ試していません。**
+
 ## 毎回付けるべきオプション
 
 ### `--new-ids`

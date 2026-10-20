@@ -22,6 +22,8 @@ USB Wi-Fiアダプタ越しに、電波の届く範囲の自分の実機と直�
 - 送信メッセージの書き換え: あいさつコメント、通知文言、送信者Mii(顔・ニックネーム・
   識別情報を丸ごと)。実機のMii広場に「初めまして」/「n回目」として表示される
 - 実機のNANDバックアップから、本体に保存された他のMii(過去に会った人等)を取り出す
+- メッセージを雛形なしでゼロから生成する。また、エミュレータ上のMii PlazaにBoxを通して、受理されるか
+  を実機なしで確認する(ゼロから作ったBoxの実機での確認は未実施)
 - Mii Plaza以外のゲーム(とびだせ どうぶつの森)のメッセージ形式の解析結果
   (静的解析のみ。実機での検証・送信は未実装)
 
@@ -34,6 +36,7 @@ USB Wi-Fiアダプタ越しに、電波の届く範囲の自分の実機と直�
 |---|---|
 | 実機とすれちがい、メッセージを受信・保存する | CFW入りの3DS(GodMode9で取った`aes_keys.txt`)、偽装MAC対応のUSB Wi-Fiアダプタ。**NANDバックアップは不要** |
 | 受信したBoxを雛形に、コメント・通知文・別人Mii等を書き換えて送る | 同上 |
+| Boxをゼロから作る / Mii Plazaが受理するかをエミュレータで確認する(実機不要) | 生成だけならPythonのみ。エミュレータテストには自分のMii Plazaのダンプも必要 → [docs/JA/EMULATOR_TEST.md](docs/JA/EMULATOR_TEST.md) |
 | 本体に保存された他のMii(過去にすれちがった人等)を抽出して送る | 上記に加えて**NANDバックアップ**(+`boot9.bin`・`otp.bin`) |
 
 対応環境: Linux(Raspberry Pi含む)またはmacOS、Python 3.10以上。Windowsは未検証。
@@ -59,7 +62,8 @@ pytest                      # ハードウェア不要のテスト一式
 | [docs/JA/HARDWARE.md](docs/JA/HARDWARE.md) | USB Wi-Fiアダプタの選び方(偽装MAC対応の確認方法)、動作確認表 |
 | [docs/JA/SETUP.md](docs/JA/SETUP.md) | clone直後から実機とすれちがうまでの手順 |
 | [docs/JA/TROUBLESHOOTING.md](docs/JA/TROUBLESHOOTING.md) | うまくいかないときの症状別の切り分け |
-| [docs/JA/CUSTOM.md](docs/JA/CUSTOM.md) | 送信データのカスタマイズ(`mii_plaza_editor.py`の使い方) |
+| [docs/JA/CUSTOM.md](docs/JA/CUSTOM.md) | 送信データのカスタマイズ(`mii_plaza_editor.py`)と、ゼロからの生成(`build_tmp_box.py`) |
+| [docs/JA/EMULATOR_TEST.md](docs/JA/EMULATOR_TEST.md) | 実機なしでエミュレータのMii PlazaにBoxを通して確認する |
 | [docs/JA/PROTOCOL_REFERENCE.md](docs/JA/PROTOCOL_REFERENCE.md) | 確定しているプロトコル・データ形式の仕様 |
 | [docs/JA/GAME_FORMATS.md](docs/JA/GAME_FORMATS.md) | Mii Plazaの受理判定、とびだせ どうぶつの森のメッセージ形式 |
 | [docs/JA/MONITOR_MODE.md](docs/JA/MONITOR_MODE.md) | Wi-Fi層(モニターモード)の設計 |
