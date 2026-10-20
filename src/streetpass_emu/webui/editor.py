@@ -171,8 +171,11 @@ class Editor:
             s.notice = f["notice"]
         if any(k in f for k in ("app_name", "app_long", "app_publisher")):
             cur = (s.titles or [Title("", "", "")])[0]
-            s.titles = [Title(f.get("app_name", cur.short_description), f.get("app_long", cur.long_description),
-                              f.get("app_publisher", cur.publisher))]
+            name = f.get("app_name", cur.short_description)
+            long = f.get("app_long", cur.long_description)
+            if "app_long" not in f and cur.long_description in ("", cur.short_description):
+                long = name  # the console shows the *long* name; keep it in step with the short one
+            s.titles = [Title(name, long, f.get("app_publisher", cur.publisher))]
         for key, attr, lo, hi in (("counter", "visit_counter", 0, 999_999), ("country", "country", 0, 255),
                                   ("region", "region", 0, 255)):
             if key in f:
@@ -180,6 +183,10 @@ class Editor:
                 setattr(s, attr, v)
         if "hobby" in f:
             s.hobby = self._int(f["hobby"], "hobby", 0, 27)
+        if "pet" in f:
+            s.pet = self._int(f["pet"], "pet", 0, 2)
+        if "dream" in f:
+            s.dream = self._int(f["dream"], "dream", 0, 19)
         for key, attr in (("app_title_id", "app_title_id"), ("app_title_version", "app_title_version")):
             if key in f:
                 try:
@@ -304,6 +311,8 @@ class Editor:
             "extra_body_bytes": sum(len(v) for v in s.extra_body.values()),
             "verify": self.verify(),
             "hobby": s.hobby if s.hobby is not None else (s.comment_header_tail[5] if len(s.comment_header_tail) > 5 else 0),
+            "pet": s.pet if s.pet is not None else (s.comment_header_tail[3] if len(s.comment_header_tail) > 3 else 0),
+            "dream": s.dream if s.dream is not None else (s.comment_header_tail[4] if len(s.comment_header_tail) > 4 else 0),
             "prefectures": [ja for ja, _en in JP_PREFECTURES],
             "limits": {"comment": COMMENT_MAX_CHARS, "notice": NOTICE_MAX_CHARS},
         }

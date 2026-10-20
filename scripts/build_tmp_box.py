@@ -47,7 +47,9 @@ def main() -> int:
                     "sets the residence codes and names")
     ap.add_argument("--country", type=int, default=0)
     ap.add_argument("--region", type=int, default=0)
-    ap.add_argument("--hobby", type=int, default=0, help="0 = none, 1-27 (known: 1 illustration, 9 internet, 10 games)")
+    ap.add_argument("--hobby", type=int, default=0, help="0 = none, 1-27 (known: 1 illustration, 8 movies, 9 internet, 10 games)")
+    ap.add_argument("--pet", type=int, default=0, help="0 = none, 1 = dog, 2 = cat (\"dog or cat?\")")
+    ap.add_argument("--dream", type=int, default=0, help="0 = none, 1-19 (known: 1 = live long)")
     ap.add_argument("--counter", type=int, default=1)
     ap.add_argument("-o", "--output", required=True, type=Path)
     a = ap.parse_args()
@@ -75,12 +77,12 @@ def main() -> int:
     smdh = parse_smdh(a.smdh.read_bytes()) if a.smdh else None
     spec = BoxSpec(
         mii=mii, comment=a.comment, notice=a.notice,
-        titles=[Title(a.title, "", "")] if a.title else (smdh.titles if smdh else None),
+        titles=[Title(a.title, a.title, "")] if a.title else (smdh.titles if smdh else None),
         header_icon=icon.from_png(a.header_icon, icon.TLV_SIZE) if a.header_icon else None,
         small_icon=icon.from_png(a.small_icon, icon.SMALL_SIZE) if a.small_icon else (smdh.small_icon if smdh else None),
         large_icon=icon.from_png(a.large_icon, icon.LARGE_SIZE) if a.large_icon else (smdh.large_icon if smdh else None),
         country=country, region=region, country_names=country_names, region_names=region_names,
-        visit_counter=a.counter, hobby=a.hobby,
+        visit_counter=a.counter, hobby=a.hobby, pet=a.pet, dream=a.dream,
     )
     msg = build_message(spec)
     a.output.write_bytes(msg)

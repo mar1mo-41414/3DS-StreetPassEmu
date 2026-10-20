@@ -263,7 +263,10 @@ console-specific areas above and the statistics can all be zero and the box is s
 +0x04 (2B): u16 (clamped to 3000)
 +0x06 – +0x0B: small byte values (+0x06 is checked against a lookup table, +0x07 is clamped to 2,
                +0x08 to 19, +0x09 to 27; possibly enumerations such as expression / balloon, unconfirmed)
-+0x09: **hobby** number (0 = none; picks the "my hobby is ..." line. 1 = illustration, 9 = internet, 10 = games confirmed, max 27)
++0x07: **dog or cat** (0 = none, 1 = dog, 2 = cat is a guess, max 2)
++0x08: **dream** (0 = none, 1 = "live long", max 19)
++0x09: **hobby** number (0 = none; picks the "my hobby is ..." line. 1 = illustration, 8 = movies, 9 = internet, 10 = games confirmed, max 27)
+ (these three lines were seen on a real console on a repeat visit; an emulator first meeting does not show them)
 +0x0A: `1` hides the comment and the line after it (observed in an emulator, meaning unknown)
 +0x0C – +0x0F: reserved
 +0x10–: UTF-16LE string, NUL-terminated (0x0000)

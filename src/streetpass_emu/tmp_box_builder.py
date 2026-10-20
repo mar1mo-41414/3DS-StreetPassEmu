@@ -24,7 +24,7 @@ Body offsets (body-relative)::
     0x375C  residence: byte 2 = region, byte 3 = country (1 = Japan)
     0x3760  country names 16x0x40               0x3B60  region names 16x0x40
     0x3F60  comment header (u32 counter, ...)   0x3F70  comment (16 chars, UTF-16LE)
-    0x3F69  hobby: 0 none, 1 イラスト, 9 インターネット, 10 ゲーム (a 0-27 list; others unidentified)
+    0x3F67 pet (1 dog), 0x3F68 dream (1 "live long"), 0x3F69 hobby (1 illustration, 8 movies, 9 internet, 10 games)
 """
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ OFF_COUNTRY_NAMES = 0x3760
 OFF_REGION_NAMES = 0x3B60
 OFF_COMMENT_HEADER = 0x3F60
 OFF_MII_ID_COPY = 0x4484
-OFF_HOBBY = 0x3F69   # selects the "...が趣味なんだ" line; known: 1 イラスト, 9 インターネット, 10 ゲーム
+OFF_HOBBY = 0x3F69   # "...が趣味なんだ" line; known: 1 イラスト, 8 映画, 9 インターネット, 10 ゲーム. 0x3F67 = 犬/猫 (1 犬), 0x3F68 = 夢 (1 長生き)
 OFF_COMMENT = 0x3F70
 NAME_ENTRY = 0x40
 COMMENT_MAX_CHARS = 16
@@ -117,6 +117,8 @@ class BoxSpec:
     visit_counter: int = 1                         # u32 at 0x3F60 (monotonic on a real console)
     comment_header_tail: bytes = bytes(12)         # 0x3F64..0x3F70 (mostly unknown, see ``hobby``)
     hobby: Optional[int] = None                    # 0 = none, 1-27: the "... is my hobby" line (byte 0x3F69)
+    pet: Optional[int] = None                      # 0 = none, 1 dog, 2 cat: "dog or cat?" (byte 0x3F67)
+    dream: Optional[int] = None                    # 0 = none, 1-19: the "my dream is ..." line (byte 0x3F68)
     message_id: Optional[bytes] = None             # 8 bytes, random by default
     created: Optional[datetime.datetime] = None    # default: now
     extra_body: dict[int, bytes] = field(default_factory=dict)  # body offset -> bytes (unmodelled areas)
@@ -154,7 +156,7 @@ def build_body(spec: BoxSpec) -> bytes:
     struct.pack_into("<QH", body, OFF_TITLE_ID, spec.app_title_id, spec.app_title_version)
     struct.pack_into("<II", body, 0x10, 1, 0x80)
 
-    titles = spec.titles or [Title("StreetPass", "", "")]
+    titles = spec.titles or [Title("StreetPass", "StreetPass", "")]
     put(OFF_TITLE_TABLE, build_title_table(titles))
     assert len(build_title_table(titles)) == TITLE_TABLE_SIZE
 
@@ -190,6 +192,11 @@ def build_body(spec: BoxSpec) -> bytes:
         if not 0 <= spec.hobby <= 27:
             raise ValueError("hobby must be 0-27")
         body[OFF_HOBBY] = spec.hobby
+    for val, off, hi, label in ((spec.pet, OFF_HOBBY - 2, 2, "pet"), (spec.dream, OFF_HOBBY - 1, 19, "dream")):
+        if val is not None:
+            if not 0 <= val <= hi:
+                raise ValueError(f"{label} must be 0-{hi}")
+            body[off] = val
     put(OFF_COMMENT, _utf16_fixed(spec.comment, (COMMENT_MAX_CHARS + 1) * 2))
 
     for off, data in spec.extra_body.items():

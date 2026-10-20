@@ -190,6 +190,8 @@ details summary{cursor:pointer;color:var(--acc2);margin-bottom:8px}
     </div>
     <div class="row">
       <label class="sm"><span data-i="b_hobby"></span><input type="number" id="f_hobby" min="0" max="27"></label>
+      <label class="sm"><span data-i="b_pet"></span><input type="number" id="f_pet" min="0" max="2"></label>
+      <label class="sm"><span data-i="b_dream"></span><input type="number" id="f_dream" min="0" max="19"></label>
       <label class="sm"><span data-i="b_counter"></span><input type="number" id="f_counter" min="0" max="999999"></label>
       <label class="sm"><span data-i="b_country"></span><input type="number" id="f_country" min="0" max="255"></label>
       <label class="sm"><span data-i="b_region"></span><input type="number" id="f_region" min="0" max="255"></label>
@@ -292,8 +294,8 @@ mii_from_box:"受信したBoxのMiiを使う",use_mii:"このMiiを使う",open_
 b_text:"テキスト",b_comment:"あいさつコメント",b_notice:"通知文",b_text_note:"コメントは16文字まで、通知文は8文字までです(実機の入力欄・既存Boxの長さに合わせた上限)。",
 b_app:"「最後にMiiを設定したアプリ」",b_app_name:"アプリ名",b_app_long:"長い名前",b_app_pub:"発行元",b_app_tid:"タイトルID (16桁16進)",b_app_ver:"バージョン (16進)",
 b_app_note:"訪問者に表示される情報です。SMDHファイルを読み込むと、名前とアイコンが入ります。",
-b_res:"居住地・カウンタ",b_pref:"都道府県(選ぶと国・地域コードと名前を自動で入れる)",b_pref_none:"(未設定)",b_hobby:"趣味(0-27)",b_counter:"カウンタ",b_country:"国コード",b_region:"地域コード",b_country_ja:"国名(日本語)",b_country_en:"国名(英語)",b_region_ja:"地域名(日本語)",b_region_en:"地域名(英語)",
-b_res_note:"趣味は「ぼく…が趣味なんだ」の一文を選ぶ番号(0=なし、判明しているのは 1=イラスト、9=インターネット、10=ゲーム)。国コード 1=日本。国名・地域名は受信側の本体の言語で選ばれて表示されます(ここでは日本語と英語、他の言語は英語で埋めます)。空でも受理されます。",
+b_res:"居住地・カウンタ",b_pref:"都道府県(選ぶと国・地域コードと名前を自動で入れる)",b_pref_none:"(未設定)",b_hobby:"趣味(0-27)",b_pet:"犬/猫(0-2)",b_dream:"夢(0-19)",b_counter:"カウンタ",b_country:"国コード",b_region:"地域コード",b_country_ja:"国名(日本語)",b_country_en:"国名(英語)",b_region_ja:"地域名(日本語)",b_region_en:"地域名(英語)",
+b_res_note:"趣味は「ぼく…が趣味なんだ」の一文を選ぶ番号(0=なし、判明しているのは 1=イラスト、8=映画、9=インターネット、10=ゲーム。犬/猫は 1=犬(2=猫は推定)、夢は 1=長生き。犬/猫と夢の一文は、実機の「n回目」の表示で確認。エミュレータの初対面では出ませんでした)。国コード 1=日本。国名・地域名は受信側の本体の言語で選ばれて表示されます(ここでは日本語と英語、他の言語は英語で埋めます)。空でも受理されます。",
 b_icons:"アイコン",b_smdh:"SMDHファイルから名前とアイコンを読み込む",b_icons_note:"画像は自動で縮小されます。アイコンが無くても受理されます(灰色の代替アイコンが入ります。ゼロのままだと実機では黒い四角になります)。",
 icon_large:"大(48×48)",icon_small:"小(24×24)",icon_header:"ヘッダ(40×40)",choose_img:"画像を選ぶ",clear:"外す",no_icon:"なし(灰色の代替)",
 i_mii:"Miiの識別情報",apply:"反映",rnd_author:"author_idを新しくする",rnd_mii:"mii_idを新しくする",
@@ -332,8 +334,8 @@ mii_from_box:"Use the Mii of a received box",use_mii:"Use this Mii",open_box:"Op
 b_text:"Text",b_comment:"Greeting comment",b_notice:"Notification text",b_text_note:"Up to 16 characters for the comment and 8 for the notification (the console's input limit / the existing box length).",
 b_app:"\"Last app that set the Mii\"",b_app_name:"App name",b_app_long:"Long name",b_app_pub:"Publisher",b_app_tid:"Title ID (16 hex digits)",b_app_ver:"Version (hex)",
 b_app_note:"Shown with the visitor. Loading an SMDH file fills in the name and icons.",
-b_res:"Residence and counter",b_pref:"Prefecture (fills in the country / region codes and names)",b_pref_none:"(not set)",b_hobby:"Hobby (0-27)",b_counter:"Counter",b_country:"Country code",b_region:"Region code",b_country_ja:"Country (Japanese)",b_country_en:"Country (English)",b_region_ja:"Region (Japanese)",b_region_en:"Region (English)",
-b_res_note:"Hobby picks the \"my hobby is ...\" line (0 = none; known: 1 illustration, 9 internet, 10 games). Country code 1 = Japan. The receiver picks the name for its own console language (Japanese and English here; other languages are filled with English). Empty is accepted.",
+b_res:"Residence and counter",b_pref:"Prefecture (fills in the country / region codes and names)",b_pref_none:"(not set)",b_hobby:"Hobby (0-27)",b_pet:"Dog/cat (0-2)",b_dream:"Dream (0-19)",b_counter:"Counter",b_country:"Country code",b_region:"Region code",b_country_ja:"Country (Japanese)",b_country_en:"Country (English)",b_region_ja:"Region (Japanese)",b_region_en:"Region (English)",
+b_res_note:"Hobby picks the \"my hobby is ...\" line (0 = none; known: 1 illustration, 8 movies, 9 internet, 10 games; dog/cat: 1 dog (2 cat is a guess); dream: 1 live long; the dog/cat and dream lines were seen on a real console on a repeat visit, not in an emulator first meeting). Country code 1 = Japan. The receiver picks the name for its own console language (Japanese and English here; other languages are filled with English). Empty is accepted.",
 b_icons:"Icons",b_smdh:"Load names and icons from an SMDH file",b_icons_note:"Images are scaled automatically. A box without icons is still accepted (a grey stand-in is used; all-zero data would show as a black square on the console).",
 icon_large:"Large (48×48)",icon_small:"Small (24×24)",icon_header:"Header (40×40)",choose_img:"Choose image",clear:"Remove",no_icon:"none (grey stand-in)",
 i_mii:"Mii identity",apply:"Apply",rnd_author:"New author_id",rnd_mii:"New mii_id",
@@ -403,7 +405,7 @@ function render(){
   $("miiDl").href="/api/mii/download?t="+TOKEN;
   $("miiBoxList").innerHTML=boxes.length?`<table>${boxes.map(f=>`<tr><td class="mono">${esc(f.name)}</td><td><button class="b sec" data-load="${esc(f.name)}" data-dir="received" data-as="mii_from_box">${t("use_mii")}</button></td></tr>`).join("")}</table>`:t("none");
   // box tab
-  ["comment","notice","app_name","app_long","app_publisher","app_title_id","app_title_version","hobby","counter","country","region","country_ja","country_en","region_ja","region_en"].forEach(k=>setVal("f_"+k,S[k]));
+  ["comment","notice","app_name","app_long","app_publisher","app_title_id","app_title_version","hobby","pet","dream","counter","country","region","country_ja","country_en","region_ja","region_en"].forEach(k=>setVal("f_"+k,S[k]));
   $("cmtCount").textContent=`${[...(S.comment||"")].length}/${S.limits.comment}`;$("ntcCount").textContent=`${[...(S.notice||"")].length}/${S.limits.notice}`;
   renderIcons();
   const pe=$("f_prefecture");if(document.activeElement!==pe){if(!pe.options.length||pe.dataset.lang!==lang){pe.innerHTML=`<option value="">${t("b_pref_none")}</option>`+S.prefectures.map(p=>`<option>${p}</option>`).join("");pe.dataset.lang=lang}pe.value=S.prefecture||""}
@@ -440,7 +442,7 @@ let fieldTimer;
 function bindField(id,key,num){const e=$(id);e.addEventListener("input",()=>{clearTimeout(fieldTimer);fieldTimer=setTimeout(async()=>{
   try{S=await api("/api/fields",{[key]:num?e.value:e.value});S.__keep=1;renderKeep(id)}catch(x){}},350)})}
 function renderKeep(id){const ae=document.activeElement;render();if(ae&&ae.id===id)ae.focus()}
-[["f_comment","comment"],["f_notice","notice"],["f_app_name","app_name"],["f_app_long","app_long"],["f_app_publisher","app_publisher"],["f_app_title_id","app_title_id"],["f_app_title_version","app_title_version"],["f_hobby","hobby"],["f_counter","counter"],["f_country","country"],["f_region","region"],["f_country_ja","country_ja"],["f_country_en","country_en"],["f_region_ja","region_ja"],["f_region_en","region_en"]].forEach(([i,k])=>bindField(i,k));
+[["f_comment","comment"],["f_notice","notice"],["f_app_name","app_name"],["f_app_long","app_long"],["f_app_publisher","app_publisher"],["f_app_title_id","app_title_id"],["f_app_title_version","app_title_version"],["f_hobby","hobby"],["f_pet","pet"],["f_dream","dream"],["f_counter","counter"],["f_country","country"],["f_region","region"],["f_country_ja","country_ja"],["f_country_en","country_en"],["f_region_ja","region_ja"],["f_region_en","region_en"]].forEach(([i,k])=>bindField(i,k));
 $("f_prefecture").onchange=()=>act("/api/fields",{prefecture:$("f_prefecture").value});
 $("btnSaveSettings").onclick=async()=>{await act("/api/settings",{wifit3_dir:$("s_wifit3_dir").value,uv_python:$("s_uv_python").value,keyslot_file:$("s_keyslot_file").value,friend_code:$("s_friend_code").value,channel:+$("s_channel").value,cycle_seconds:+$("s_cycle_seconds").value,cycles:+$("s_cycles").value,fresh_each_cycle:$("s_fresh_each_cycle").checked,verbose:$("s_verbose").checked,sleep_between_cycles:+$("s_sleep_between_cycles").value,retry_backoff:+$("s_retry_backoff").value,max_retries:+$("s_max_retries").value,probe_interval:$("s_probe_interval").value,match_identity:$("s_match_identity").checked,match_console_id:$("s_match_console_id").checked,extra_args:$("s_extra_args").value},"saved")};
 $("btnStart").onclick=async()=>{await $("btnSaveSettings").onclick();await act("/api/run/start",{})};

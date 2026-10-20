@@ -305,3 +305,19 @@ def test_random_mii_api(gui):
     _app, call = gui
     st, s = call("/api/mii", {"action": "random_mii", "nickname": "ランダム"})
     assert st == 200 and s["mii"]["nickname"] == "ランダム" and s["verify"]["mii_tag"]
+
+
+def test_title_sets_the_long_name_too_and_profile_bytes():
+    e = Editor()
+    e.set_mii(MII)
+    e.set_fields({"app_name": "テストアプリ"})
+    st = e.state()
+    assert st["app_name"] == st["app_long"] == "テストアプリ"      # the console shows the long name
+    e.set_fields({"app_long": "長い名前"})
+    e.set_fields({"app_name": "別の名前"})
+    assert e.state()["app_long"] == "長い名前"                      # an explicit long name is kept
+    e.set_fields({"hobby": 8, "pet": 1, "dream": 1})
+    body = e.build()[0xD14:]
+    assert (body[0x3F67], body[0x3F68], body[0x3F69]) == (1, 1, 8)
+    with pytest.raises(EditorError, match="out_of_range"):
+        e.set_fields({"pet": 3})
