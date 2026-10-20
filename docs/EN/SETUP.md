@@ -25,8 +25,8 @@ needed — the `aes_keys.txt` you dump with GodMode9 is enough.
 | Hold a StreetPass conversation with a real console and receive/save the peer's message (TMP Box) | `aes_keys.txt` (dumped with GodMode9, §4.2). **No NAND backup needed** |
 | Take a received box as a template and rewrite the comment / notification text / sender Mii, then send | Same. The template is the box you first receive from the real console (§4.6). That box already contains **your own console's Mii**, so sending it as-is does not need the NAND |
 | Send as a completely different person (a new visitor) | Same (`--new-author-id --new-mii-id`, see [CUSTOM.md](CUSTOM.md)) |
-| Send a Mii you have a **QR code image** of (yours or someone else's) | `scripts/build_tmp_box.py --mii-qr image.png` ([CUSTOM.md](CUSTOM.md)). Needs a QR decoder (`zbarimg` or `pyzbar`, [REQUIREMENTS.md](REQUIREMENTS.md)); **no NAND backup** |
-| Extract **other Miis** stored on the console (people you met before, ones imported from QR codes) and send them, when you have no QR code image of them | A **NAND backup** (plus `boot9.bin` and `otp.bin`) (§4.1 and §4.3) |
+| Send **any Mii on the console** (yours or others') as the sender | Make its QR code with the Mii Maker's "Send Miis" function, then `scripts/build_tmp_box.py --mii-qr image.png` ([CUSTOM.md](CUSTOM.md)). Needs a QR decoder (`zbarimg` or `pyzbar`, [REQUIREMENTS.md](REQUIREMENTS.md)); **no NAND backup** |
+| (Optional) Extract Miis stored on the console **in bulk** (people you met before, ones imported from QR codes) | A **NAND backup** (plus `boot9.bin` and `otp.bin`) (§4.1 and §4.3). Only a convenience: the QR route above reaches the same Miis |
 | Disclose your own friend code (optional) | Check it on the console screen and set it by hand (§4.4). Automatic extraction from the NAND is not supported |
 
 The NAND backup, `boot9.bin` and `otp.bin` are taken from the same console with GodMode9's
@@ -124,7 +124,7 @@ is where secret material lives).
 | Section | Contents | Who needs it |
 |---|---|---|
 | §4.2 | The keyslot 0x2E key (from `aes_keys.txt`) | **Everyone (mandatory)** |
-| §4.1, §4.3 | Decrypting CTRNAND; extracting other Miis stored on the console | Only if you want to send other Miis (people you met, etc.) and have no QR code image of them. Needs a NAND backup |
+| §4.1, §4.3 | Decrypting CTRNAND; extracting other Miis stored on the console | Optional, for extracting Miis in bulk (one at a time, the Mii Maker's "Send Miis" QR code is enough). Needs a NAND backup |
 | §4.4, §4.5 | Friend code; recently played software | Optional |
 | §4.6, §4.7 | Getting a template box and building the outgoing data | **Everyone (mandatory)** |
 

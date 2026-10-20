@@ -26,7 +26,7 @@ python scripts/build_tmp_box.py --mii-qr my_mii_qr.png --comment "こんにち�
 ```
 
 `--mii`は生の96バイトFFLStoreData、または112バイトの暗号化Mii blob/MiiQRペイロード。`--mii-qr`は
-Mii Makerが表示するQRコードの画像を読む(CCMタグとCRC16を検証するので、壊れた/Mii以外のQRは拒否される)。
+Mii作成の「Miiを送る」が本体内のどのMiiからでも作れるQRコードの画像を読む(CCMタグとCRC16を検証するので、壊れた/Mii以外のQRは拒否される)。
 本物のQRコード由来のMiiは本物のauthor_id/mii_idを持つので、乱数生成したIDが拒否される問題を避けられる。ヘッダ・
 TLV・本文・HMACトレーラーを生成し、Mii Plazaが必要とする部分だけを埋めます
 ([PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md)参照)。それ以外はゼロです。画像はアイコンの

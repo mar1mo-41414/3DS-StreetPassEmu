@@ -26,7 +26,7 @@ python scripts/build_tmp_box.py --mii-qr my_mii_qr.png --comment "Hello!" -o box
 ```
 
 `--mii` is a raw 96-byte FFLStoreData or a 112-byte encrypted Mii blob / Mii QR payload; `--mii-qr`
-reads the QR code image the Mii Maker shows (the CCM tag and CRC16 are verified, so a damaged or non-Mii
+reads the QR code image the Mii Maker's "Send Miis" function creates for any Mii on the console (the CCM tag and CRC16 are verified, so a damaged or non-Mii
 QR code is refused). A Mii from a real QR code has a genuine author_id / mii_id, which sidesteps the
 problem that randomly generated IDs are refused. The
 header, TLVs, body and HMAC trailer are generated; only the pieces Mii Plaza needs are filled in

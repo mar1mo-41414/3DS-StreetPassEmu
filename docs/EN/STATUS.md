@@ -19,7 +19,7 @@ console, within radio range, through a USB Wi-Fi adapter.
   to check before buying, see [HARDWARE.md](HARDWARE.md)
 - `pytest` passes with no hardware
 - **Untested**: other console regions, New 3DS models, Windows, adapters other than those above
-- What each feature requires (a NAND backup is needed *only* to extract other Miis, and not even then if you have a Mii QR code image) is in the
+- What each feature requires (a NAND backup is never required to send a Mii: the Mii Maker's "Send Miis" QR code does the job; the NAND is an optional way to extract Miis in bulk) is in the
   table in [SETUP.md](SETUP.md) §0
 
 ## 1. What works (with reproduction steps)

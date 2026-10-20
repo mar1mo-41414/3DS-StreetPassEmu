@@ -25,8 +25,8 @@
 | 実機とStreetPassの会話をし、相手のメッセージ(TMP Box)を受信・保存する | `aes_keys.txt`(GodMode9で取得、§4.2)。**NANDバックアップは不要** |
 | 受信したBoxを雛形に、コメント・通知文・送信者Mii等を書き換えて送る | 同上。雛形は最初に実機から受信したBoxを使う(§4.6)。そのBoxには**自分の実機のMii**が入っているので、そのMiiのまま送るだけならNANDは不要 |
 | 全く別人のMii(新規訪問者)として送る | 同上(`--new-author-id --new-mii-id`、[CUSTOM.md](CUSTOM.md)) |
-| **QRコード画像**を持っているMii(自分のものでも他人のものでも)を送る | `scripts/build_tmp_box.py --mii-qr 画像.png`([CUSTOM.md](CUSTOM.md))。QRデコーダ(`zbarimg`または`pyzbar`、[REQUIREMENTS.md](REQUIREMENTS.md))が必要。**NANDバックアップは不要** |
-| 本体に保存されている**他のMii**(過去にすれちがった人・QRコードで取り込んだ人)を、そのQRコード画像が無い状態で抽出して送る | **NANDバックアップ**(+`boot9.bin`・`otp.bin`)が必要(§4.1・§4.3) |
+| **本体内のどのMii**(自分のものでも他人のものでも)でも送信者にする | Mii作成の「Miiを送る」でそのMiiのQRコードを作り、`scripts/build_tmp_box.py --mii-qr 画像.png`([CUSTOM.md](CUSTOM.md))。QRデコーダ(`zbarimg`または`pyzbar`、[REQUIREMENTS.md](REQUIREMENTS.md))が必要。**NANDバックアップは不要** |
+| (任意)本体に保存されているMii(過去にすれちがった人・QRコードで取り込んだ人)を**まとめて**抽出する | **NANDバックアップ**(+`boot9.bin`・`otp.bin`)が必要(§4.1・§4.3)。便利機能にすぎず、上のQR経路でも同じMiiに届く |
 | 自分のフレンドコードを開示する(任意) | 本体の画面で確認して手動で設定(§4.4)。NANDからの自動抽出は未対応 |
 
 NANDバックアップ・`boot9.bin`・`otp.bin`は、GodMode9のバックアップ機能で同じ本体から
@@ -126,7 +126,7 @@ chmod 700 ../secrets
 | 節 | 内容 | 必要な人 |
 |---|---|---|
 | §4.2 | keyslot 0x2Eの鍵(`aes_keys.txt`から) | **全員(必須)** |
-| §4.1・§4.3 | CTRNANDの復号、本体に保存されている他のMiiの抽出 | 他のMii(過去にすれちがった人等)を送りたく、かつそのQRコード画像が無い人だけ。NANDバックアップが必要 |
+| §4.1・§4.3 | CTRNANDの復号、本体に保存されている他のMiiの抽出 | Miiをまとめて抽出したい人の任意の手段(個別ならMii作成の「Miiを送る」のQRで足りる)。NANDバックアップが必要 |
 | §4.4・§4.5 | フレンドコード、最近遊んだソフト | 任意 |
 | §4.6・§4.7 | 雛形Boxの取得と、送信データの組み立て | **全員(必須)** |
 
