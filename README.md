@@ -13,8 +13,9 @@ your real console, within radio range, through a USB Wi-Fi adapter.
 >   [docs/EN/HARDWARE.md](docs/EN/HARDWARE.md)
 > - You need your own 3DS with custom firmware (CFW), because the AES key is extracted with
 >   GodMode9.
-> - A NAND backup is only needed to extract *other* Miis stored on the console and send them.
->   See the table below for what each feature requires.
+> - A NAND backup is only needed to extract *other* Miis stored on the console and send them —
+>   and not even then if you can get the Mii as a **Mii QR code image** (`--mii-qr`). See the table
+>   below for what each feature requires.
 
 ## What it can do
 
@@ -24,7 +25,8 @@ your real console, within radio range, through a USB Wi-Fi adapter.
 - Rewrite outgoing messages: greeting comment, notification text, and the sender Mii (face,
   nickname and identity IDs — the whole thing). The real console's Mii Plaza shows the result
   as "first meeting" or "n-th meeting"
-- Extract other Miis stored on the console (people you met before, etc.) from a NAND backup
+- Get a sender Mii from a Mii QR code image, or extract other Miis stored on the console (people you
+  met before, etc.) from a NAND backup
 - Build a message from scratch (no genuine box as a template), and check whether Mii Plaza accepts
   a message by running it through the game in an emulator — no console needed (real-console
   confirmation of from-scratch boxes is still pending)
@@ -41,7 +43,8 @@ item, see **[docs/EN/STATUS.md](docs/EN/STATUS.md)**.
 | Meet a real 3DS and receive/save its messages | A CFW 3DS (`aes_keys.txt` dumped with GodMode9) and a spoofed-MAC-capable USB Wi-Fi adapter. **No NAND backup needed** |
 | Take a received box as a template and rewrite the comment / notification text / use a different Mii | Same as above |
 | Build a box from scratch, or check whether Mii Plaza would accept a box (in an emulator, no console) | Python only for building; an emulator test also needs your own Mii Plaza dump → [docs/EN/EMULATOR_TEST.md](docs/EN/EMULATOR_TEST.md) |
-| Extract other Miis stored on the console (people you met, etc.) and send them | The above **plus a NAND backup** (and `boot9.bin`, `otp.bin`) |
+| Send a Mii you have a **QR code image** of (yours or someone else's) | A QR decoder (`zbarimg` or `pyzbar`, see [REQUIREMENTS](docs/EN/REQUIREMENTS.md)). **No NAND backup needed** |
+| Extract other Miis stored on the console (people you met, etc.) and send them, when you have no QR code for them | The above **plus a NAND backup** (and `boot9.bin`, `otp.bin`) |
 
 Supported environment: Linux (including Raspberry Pi) or macOS, Python 3.10+. Windows is untested.
 

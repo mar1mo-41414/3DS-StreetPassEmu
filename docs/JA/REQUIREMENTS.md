@@ -21,7 +21,7 @@ python -m pip install -e ".[dev]"      # テスト用にpytestとpyctr。ハー�
 ### 実機とすれちがう(Boxの受信・送信)
 - 偽装MACにACKを返せるUSB Wi-Fiアダプタ — [HARDWARE.md](HARDWARE.md)。必須
 - CFW入りの3DSと**GodMode9**。自分の実機から`aes_keys.txt`を取り出すため(他のMiiを抽出する場合
-  だけ、さらにNANDバックアップ+`boot9.bin`+`otp.bin`)
+  で、そのMiiのQRコード画像が無い場合だけ、さらにNANDバックアップ+`boot9.bin`+`otp.bin`)
 - `wifit3`(GPLv2、`tools/wifit3`に別途clone)と**uv** — [SETUP.md](SETUP.md) §3
 - Linux: ユーザー権限でlibusbに触れる設定(`docs/99-wifit3.rules`のudevルール)、または`sudo`
 

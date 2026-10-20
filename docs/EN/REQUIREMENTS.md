@@ -21,7 +21,7 @@ python -m pip install -e ".[dev]"      # pytest and pyctr for the tests; no hard
 ### Meeting a real console (receive / send boxes)
 - A USB Wi-Fi adapter that can ACK a spoofed MAC — [HARDWARE.md](HARDWARE.md). Mandatory.
 - A 3DS with custom firmware and **GodMode9**, to dump `aes_keys.txt` (and, only for extracting other
-  Miis, a NAND backup + `boot9.bin` + `otp.bin`) from a console you own.
+  Miis that you have no Mii QR code image of, a NAND backup + `boot9.bin` + `otp.bin`) from a console you own.
 - `wifit3` (GPLv2, cloned separately into `tools/wifit3`) and **uv** — [SETUP.md](SETUP.md) §3.
 - Linux: `libusb` access for your user (the udev rule in `docs/99-wifit3.rules`), or `sudo`.
 
