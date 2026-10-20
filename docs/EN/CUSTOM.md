@@ -45,7 +45,7 @@ without it the console shows "_" as the residence. `--hobby N` picks the "…is 
 box's own icon — unless `--app-title-id` is System Settings (the default), in which case the console shows its own name. Use another
 title ID to get a custom name. A given Mii only has one conversation per day: sending the same Mii again
 (`--fresh-message-ids-each-cycle` regenerates the message IDs) just raises today's encounter counter. Missing icons become a grey stand-in (all-zero data would be a black square). **Boxes built this way were
-accepted by Mii Plaza on real consoles (Linux and macOS hosts).**
+accepted by Mii Plaza on real consoles (Linux, macOS and Windows hosts).**
 
 ## Options to use every time
 
@@ -95,6 +95,7 @@ content while keeping the identity the same".
 
 Rewrites the greeting comment. **Up to 16 characters** (the console's own input field limit).
 Whatever length the original comment was, you can freely grow or shrink it up to 16 characters.
+Note: on a real console the comment has not been seen in any test so far (an emulator shows it) — see [STATUS.md](STATUS.md).
 
 ### `--notification-message "text"`
 

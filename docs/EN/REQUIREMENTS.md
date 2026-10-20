@@ -9,7 +9,7 @@ except the system tools marked *(system)*.
 |---|---|
 | Python 3.10 or newer | 3.12 recommended |
 | `pycryptodome >= 3.20` | installed by `pip install -e .` |
-| Linux or macOS | Windows is untested |
+| Linux, macOS or Windows | Windows: command line verified with an RTL8812AU adapter; wifit3 installs the WinUSB driver on first use |
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate

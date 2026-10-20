@@ -27,7 +27,7 @@ USB Wi-Fiアダプタ越しに、電波の届く範囲の自分の実機と直�
 - 上記をブラウザで動く**GUI**(送受信・Mii・Box編集・識別情報・ファイル・ログのタブ)から行う
   (Windows/macOS/Linux共通) — [docs/JA/GUI.md](docs/JA/GUI.md)
 - メッセージを雛形なしでゼロから生成する。また、エミュレータ上のMii PlazaにBoxを通して、受理されるか
-  を実機なしで確認する(ゼロから作ったBoxの実機での確認は未実施)
+  を実機なしで確認する(ゼロから作ったBoxは実機のMii広場で受理されることを確認済み)
 - Mii Plaza以外のゲーム(とびだせ どうぶつの森)のメッセージ形式の解析結果
   (静的解析のみ。実機での検証・送信は未実装)
 
@@ -44,7 +44,7 @@ USB Wi-Fiアダプタ越しに、電波の届く範囲の自分の実機と直�
 | 本体内のどのMii(自分のものでも他人のものでも)でも送信者にする | そのMiiの**QRコード**の画像(Mii作成の「Miiを送る」)と、QRデコーダ(`zbarimg`または`pyzbar`、[REQUIREMENTS](docs/JA/REQUIREMENTS.md)参照)。**NANDバックアップは不要** |
 | (任意)QRコードを1つずつ作らず、本体内のMiiをまとめて抽出する | 上記に加えて**NANDバックアップ**(+`boot9.bin`・`otp.bin`) |
 
-対応環境: Linux(Raspberry Pi含む)またはmacOS、Python 3.10以上。Windowsは未検証。
+対応環境: Linux(Raspberry Pi含む)、macOS、Windows、Python 3.10以上。
 
 ## クイックスタート
 

@@ -5,10 +5,13 @@
 
 --mii takes a raw 96-byte FFLStoreData, or a 112-byte encrypted Mii blob / Mii QR payload;
 --mii-qr takes a picture of a Mii QR code instead (needs zbarimg or pyzbar).
+A Mii can also be made from nothing with --random-mii (--nickname, --creator, --birthday), and any Mii can get new IDs with --new-ids
+or be (un)locked for editing in Mii Maker with --allow-edit / --no-allow-edit.
 Optional: --smdh FILE (names + icons from an SMDH), --large-icon / --small-icon / --header-icon (images, scaled to fit), --title NAME
-(the "app" name shown with the visitor), --country N --region N, --counter N.
+(the "last app" name shown with the visitor; --app-title-id), --prefecture NAME (residence; or --country N --region N), --hobby / --pet /
+--dream N (the profile lines), --counter N.
 The result can be fed to the emulator test (scripts/emu_receiver_test.py) or sent with
-scripts/streetpass_loop.py --outbound-tmp-box-body.
+scripts/streetpass_loop.py --outbound-tmp-box-body-template.
 """
 from __future__ import annotations
 

@@ -49,10 +49,10 @@ Not `SPOOFABLE`: `rt2500usb` (`NONE`), `rtl8187` (`FIXED_MAC`), and `rtl8812au`,
 
 | Adapter | Chip | USB ID | Verified environment |
 |---|---|---|---|
-| Buffalo WI-U3-866D | RTL8812AU | `0411:025d` | Linux x86_64 |
+| Buffalo WI-U3-866D | RTL8812AU | `0411:025d` | Linux x86_64, macOS (Apple Silicon), Windows (x86-64, WinUSB driver) |
 | Buffalo WI-U2-433DM | RTL8821AU | `0411:0242` | Raspberry Pi 5 (Linux), macOS (Apple Silicon) |
 
-Any other adapter or OS (including Windows) is **untested**. Reports of what did or did not work
+Any other adapter or OS is **untested**. On Windows, wifit3 swaps the adapter's driver for WinUSB on first use (see [SETUP.md](SETUP.md) §3). Reports of what did or did not work
 are welcome (see "Please do not paste these into Issues" in the [README](../../README.md) first).
 
 ## Other requirements

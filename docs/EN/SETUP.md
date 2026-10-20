@@ -23,8 +23,9 @@ needed — the `aes_keys.txt` you dump with GodMode9 is enough.
 | What you want to do | What you need |
 |---|---|
 | Hold a StreetPass conversation with a real console and receive/save the peer's message (TMP Box) | `aes_keys.txt` (dumped with GodMode9, §4.2). **No NAND backup needed** |
-| Take a received box as a template and rewrite the comment / notification text / sender Mii, then send | Same. The template is the box you first receive from the real console (§4.6). That box already contains **your own console's Mii**, so sending it as-is does not need the NAND |
+| Take a received box as a template and rewrite the comment / notification text / sender Mii, then send | Same. The template is a box you receive from the real console (§4.6; optional now that a box can be built from scratch). That box already contains **your own console's Mii**, so sending it as-is does not need the NAND |
 | Send as a completely different person (a new visitor) | Same (`--new-author-id --new-mii-id`, see [CUSTOM.md](CUSTOM.md)) |
+| Build a box **from scratch** (no template, no received box) | Python only. The Mii comes from a Mii QR code image, a Mii file or `--random-mii` ([CUSTOM.md](CUSTOM.md), §4.6). Boxes built this way were accepted by Mii Plaza on real consoles |
 | Send **any Mii on the console** (yours or others') as the sender | Make its QR code with the Mii Maker's "Send Miis" function, then `scripts/build_tmp_box.py --mii-qr image.png` ([CUSTOM.md](CUSTOM.md)). Needs a QR decoder (`zbarimg` or `pyzbar`, [REQUIREMENTS.md](REQUIREMENTS.md)); **no NAND backup** |
 | (Optional) Extract Miis stored on the console **in bulk** (people you met before, ones imported from QR codes) | A **NAND backup** (plus `boot9.bin` and `otp.bin`) (§4.1 and §4.3). Only a convenience: the QR route above reaches the same Miis |
 | Disclose your own friend code (optional) | Check it on the console screen and set it by hand (§4.4). Automatic extraction from the NAND is not supported |
@@ -105,9 +106,22 @@ After applying it, replug the adapter (or let `udevadm trigger` re-detect it) an
 can run the check command in §3 and `live_streetpass_test.py` / `streetpass_loop.py` without
 `sudo`.
 
-On macOS (Apple Silicon; verified with an RTL8821AU-class adapter) no extra libusb user-space
+On macOS (Apple Silicon; verified with RTL8821AU- and RTL8812AU-class adapters) no extra libusb user-space
 setup is needed, so this procedure is unnecessary — `uv run --python 3.12 --with pycryptodome python ...`
-just works (specify Python 3.12 because `libusb-package` has no wheel for Python 3.14).
+just works (specify Python 3.12 because `libusb-package` has no wheel for Python 3.14). macOS asks once
+whether to allow the USB device: choose *Allow*.
+
+**On Windows** (x86-64; verified with an RTL8812AU-class adapter): wifit3 replaces the adapter's Windows driver with
+**WinUSB** on first use (one UAC prompt; the Uninstall button on its splash screen restores the original driver):
+
+```powershell
+cd tools\wifit3
+uv run --python 3.12 wifit3        # follow the prompt to install WinUSB for your adapter
+```
+
+After that no administrator rights are needed. Use `uv run --python 3.12 --with pycryptodome python ..\..\scripts\streetpass_loop.py ...`
+from PowerShell (set the key / friend-code files with `$env:STREETPASS_KEYSLOT_2E_FILE = "C:\..."`). If the adapter is listed but
+the loop fails with `claim: Operation not supported`, WinUSB is not bound yet: replug the adapter and check that its driver is WinUSB.
 
 ## 4. Extracting material from your console
 
@@ -129,7 +143,7 @@ is where secret material lives).
 | §4.2 | The keyslot 0x2E key (from `aes_keys.txt`) | **Everyone (mandatory)** |
 | §4.1, §4.3 | Decrypting CTRNAND; extracting other Miis stored on the console | Optional, for extracting Miis in bulk (one at a time, the Mii Maker's "Send Miis" QR code is enough). Needs a NAND backup |
 | §4.4, §4.5 | Friend code; recently played software | Optional |
-| §4.6, §4.7 | Getting a template box and building the outgoing data | **Everyone (mandatory)** |
+| §4.6, §4.7 | Building the outgoing box (from scratch, or from a received template) | **Everyone** (a received template is optional) |
 
 You obtain the material **with GodMode9 ([`d0k3/GodMode9`](https://github.com/d0k3/GodMode9)) on
 your own CFW 3DS**: `aes_keys.txt` and, if you need §4.1/§4.3, the `SysNAND (full)` backup,
@@ -223,22 +237,25 @@ separate test console (for example a broken one) is recommended.
 For customizing the outgoing side (see `src/streetpass_emu/recently_played.py`). Leaving it
 unset causes no problems.
 
-### 4.6 The base TMP Box (template)
+### 4.6 Getting a box to send (from scratch, or from a template)
 
-There is currently no feature to build a TMP Box (a StreetPass message) entirely from scratch;
-you **must always use a genuine capture from a real console as a template at least once**, so
-that everything other than the Mii and comment (header, icon, country-name table, ...) is
-filled in correctly.
+You no longer need a genuine capture as a template: `scripts/build_tmp_box.py` builds a whole TMP Box
+(the StreetPass message) from nothing but a Mii — from a Mii QR code image, a Mii file, or a brand-new
+random Mii. See [CUSTOM.md](CUSTOM.md) ("Building a box from scratch"):
 
-Following step ① of §6, run `live_streetpass_test.py` without changing anything and receive
-**the genuine outgoing data** your own 3DS sends once (it is saved as
-`tmp_box_<mac>_<i>.bin`). Store it under `secrets/outbound/` or similar, and you can reuse it as
-a template repeatedly. It is real data containing a personal Mii and comment text, so do not
-commit it to the repository.
+```bash
+python scripts/build_tmp_box.py --random-mii --nickname Test --comment "Hello!" -o ../secrets/outbound/my_send_box.bin
+python scripts/mii_plaza_editor.py verify ../secrets/outbound/my_send_box.bin
+```
 
-### 4.7 Building the outgoing data
+Alternatively you can still use a **genuine capture as a template** (it keeps console-specific details such as the
+statistics area and your real profile lines). Following step ① of §6, run the loop without changing anything and
+receive the genuine outgoing data your own 3DS sends once (it is saved as `tmp_box_<mac>_<i>.bin`). It is real data
+containing a personal Mii and comment text, so keep it under `secrets/outbound/` and do not commit it.
 
-Rewrite the template to produce the box you will send. `--new-ids` regenerates the header IDs
+### 4.7 Editing a template into the outgoing data
+
+If you use a received box as a template, rewrite it to produce the box you will send. `--new-ids` regenerates the header IDs
 so the console's de-duplication does not discard it:
 
 ```bash
@@ -287,7 +304,7 @@ cd tools/wifit3
 Monitor-mode operation over USB normally needs `sudo` (wifit3 grabs the USB device directly).
 Put the 3DS into **sleep mode (waiting for StreetPass)**.
 
-**① First receive once without any customization (getting the template)**:
+**① (Optional) First receive once without any customization (saves the box your console sends, usable as a template)**:
 
 ```bash
 sudo -E uv run --with pycryptodome python ../../scripts/live_streetpass_test.py \

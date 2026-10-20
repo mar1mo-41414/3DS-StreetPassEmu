@@ -261,16 +261,20 @@ console-specific areas above and the statistics can all be zero and the box is s
                              console it grew monotonically across days (14 → 23 → 27), so it looks
                              like an encounter counter
 +0x04 (2B): u16 (clamped to 3000)
-+0x06 – +0x0B: small byte values (+0x06 is checked against a lookup table, +0x07 is clamped to 2,
-               +0x08 to 19, +0x09 to 27; possibly enumerations such as expression / balloon, unconfirmed)
-+0x07: **dog or cat** (0 = none, 1 = dog, 2 = cat is a guess, max 2)
-+0x08: **dream** (0 = none, 1 = "live long", max 19)
-+0x09: **hobby** number (0 = none; picks the "my hobby is ..." line. 1 = illustration, 8 = movies, 9 = internet, 10 = games confirmed, max 27)
- (these three lines were seen on a real console on a repeat visit; an emulator first meeting does not show them)
-+0x0A: `1` hides the comment and the line after it (observed in an emulator, meaning unknown)
++0x06 (1B): checked against a lookup table (0–0xCB, a few values excluded); meaning unknown
++0x07 (1B): **dog or cat** — 0 none, 1 dog, 2 cat (a guess); max 2
++0x08 (1B): **dream** — 0 none, 1 "live long"; max 19
++0x09 (1B): **hobby** — 0 none, 1 illustration, 8 movies, 9 internet, 10 games; max 27
++0x0A (1B): in an emulator, `1` hides the comment and the line after it (not seen on a real console)
 +0x0C – +0x0F: reserved
 +0x10–: UTF-16LE string, NUL-terminated (0x0000)
 ```
+
+On a real console the three profile lines (dog or cat, dream, hobby) appear in the arrival conversation one or two at a time
+and the visitor's profile screen lists them as "-" until they are known, which suggests they are revealed gradually over repeated
+meetings (not yet confirmed; the same Mii on the same day only raises the encounter counter). The greeting **comment** has
+not been seen on a real console at all — neither in the arrival conversation nor on the profile screen (which has no comment
+field) — although an emulator shows it.
 
 Confirmed across several real captures: the u32 at `+0x00` is **not the character count**
 (it measured 14 for a 16-character comment and 23 for a 1-character comment — a value unrelated

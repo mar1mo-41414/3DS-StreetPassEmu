@@ -82,5 +82,8 @@ accepted still crashes the emulated game a moment later.
 
 - The receiver trace addresses are for one build (the Japanese update); other regions need their
   own addresses, but the screenshot check works unchanged.
+- **Acceptance and dialogue differ from a real console in details.** Acceptance has matched every real-console test so far, but the
+  arrival conversation does not: the emulator shows the comment and the hobby line at once at a first meeting, while a real console
+  showed one or two profile lines (never the comment) and one conversation per Mii per day.
 - Visitor *rendering* in the emulator uses open-source stand-ins for the shared Mii data and
   fonts, so faces appear as placeholders. Judge acceptance, not appearance.

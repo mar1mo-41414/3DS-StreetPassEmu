@@ -9,7 +9,7 @@
 |---|---|
 | Python 3.10以上 | 3.12推奨 |
 | `pycryptodome >= 3.20` | `pip install -e .`で入る |
-| LinuxまたはmacOS | Windowsは未検証 |
+| Linux、macOS、Windows | Windows: RTL8812AU系アダプタでコマンドラインを確認。wifit3が初回にWinUSBドライバを入れる |
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate

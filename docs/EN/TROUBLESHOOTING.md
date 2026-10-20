@@ -116,6 +116,33 @@ message ID every time with `--new-ids`, the same Mii may still be shown as a "fi
 The greeting comment is limited to 16 characters, matching the console's input field. Mixed
 full-width/half-width strings are judged by the count `len()` returns.
 
+### C-7. The residence shows "_" ("_ no ... desu")
+
+The country / region name tables of the box are empty. Build the box with `--prefecture` (for example `--prefecture 福岡県`), which fills
+in the codes and names ([CUSTOM.md](CUSTOM.md)).
+
+### C-8. The app icon in the notification / "recently played" is a black square
+
+Missing icons used to be all-zero data. Current builds put in a grey stand-in; pass `--large-icon` / `--small-icon` / `--header-icon` for your own.
+The name shown is the box's title table (`--title`), except when `--app-title-id` is System Settings (the default), which the console names itself.
+
+### C-9. Taken to Mii Maker, the Mii "cannot be edited"
+
+The Mii's "allow copying" flag is off. Random Miis are editable by default; for any other Mii use `--allow-edit` (or the "Allow editing"
+checkbox in the GUI's Mii tab).
+
+### C-10. Only one or two profile lines (dog or cat, hobby, dream) appear, or the comment never does
+
+Seen on real consoles: each meeting shows only some of the profile lines, the visitor's profile screen shows "-" for the lines not yet known, and the
+same Mii on the same day only raises the encounter counter (one conversation per Mii per day). The greeting comment has not been seen on a real console
+in any test (see [STATUS.md](STATUS.md)). This is not an error on your side.
+
+### C-11. Windows: `claim: Operation not supported or unimplemented on this platform`
+
+The adapter is listed but WinUSB is not bound to it yet. Run `uv run --python 3.12 wifit3` in `tools\wifit3` and install WinUSB, or replug the adapter
+([SETUP.md](SETUP.md) §3). Also: use the PowerShell syntax (`$env:NAME = "..."`), not the bash `export`, and keep files with Japanese text in UTF-8 (the
+programs read them as UTF-8 regardless of the Windows locale in current versions).
+
 ## D. Extracting from a NAND backup
 
 | Symptom | Cause and fix |

@@ -23,8 +23,9 @@
 | やりたいこと | 必要なもの |
 |---|---|
 | 実機とStreetPassの会話をし、相手のメッセージ(TMP Box)を受信・保存する | `aes_keys.txt`(GodMode9で取得、§4.2)。**NANDバックアップは不要** |
-| 受信したBoxを雛形に、コメント・通知文・送信者Mii等を書き換えて送る | 同上。雛形は最初に実機から受信したBoxを使う(§4.6)。そのBoxには**自分の実機のMii**が入っているので、そのMiiのまま送るだけならNANDは不要 |
+| 受信したBoxを雛形に、コメント・通知文・送信者Mii等を書き換えて送る | 同上。雛形は実機から受信したBoxを使う(§4.6。ゼロから作れるようになったので必須ではない)。そのBoxには**自分の実機のMii**が入っているので、そのMiiのまま送るだけならNANDは不要 |
 | 全く別人のMii(新規訪問者)として送る | 同上(`--new-author-id --new-mii-id`、[CUSTOM.md](CUSTOM.md)) |
+| Boxを**ゼロから**作る(雛形も受信したBoxも不要) | Pythonだけ。MiiはMii QRコード画像、Miiファイル、または`--random-mii`から([CUSTOM.md](CUSTOM.md)、§4.6)。この方法で作ったBoxは実機のMii広場で受理されることを確認済み |
 | **本体内のどのMii**(自分のものでも他人のものでも)でも送信者にする | Mii作成の「Miiを送る」でそのMiiのQRコードを作り、`scripts/build_tmp_box.py --mii-qr 画像.png`([CUSTOM.md](CUSTOM.md))。QRデコーダ(`zbarimg`または`pyzbar`、[REQUIREMENTS.md](REQUIREMENTS.md))が必要。**NANDバックアップは不要** |
 | (任意)本体に保存されているMii(過去にすれちがった人・QRコードで取り込んだ人)を**まとめて**抽出する | **NANDバックアップ**(+`boot9.bin`・`otp.bin`)が必要(§4.1・§4.3)。便利機能にすぎず、上のQR経路でも同じMiiに届く |
 | 自分のフレンドコードを開示する(任意) | 本体の画面で確認して手動で設定(§4.4)。NANDからの自動抽出は未対応 |
@@ -105,11 +106,24 @@ groups
 `sudo`を付けずに§3の確認コマンド・`live_streetpass_test.py`/
 `streetpass_loop.py`を実行できることを確認する。
 
-macOS(Apple Silicon、RTL8821AU系で確認済み)は
+macOS(Apple Silicon、RTL8821AU系・RTL8812AU系で確認済み)は
 libusbのユーザー空間アクセスに追加設定が不要で、この手順自体が
 不要——`uv run --python 3.12 --with pycryptodome python ...`
 (Python 3.14だと`libusb-package`のwheelが無く失敗するため3.12指定)
-でそのまま動く。
+でそのまま動く。初回にmacOSが「このUSB機器を許可しますか」と聞くので「許可」を選ぶ。
+
+**Windows**(x86-64、RTL8812AU系で確認済み)では、wifit3が初回にアダプタのWindowsドライバを**WinUSB**に差し替える
+(UACの確認が1回。wifit3のスプラッシュ画面のUninstallボタンで元のドライバに戻せる):
+
+```powershell
+cd tools\wifit3
+uv run --python 3.12 wifit3        # 画面の指示に従い、アダプタにWinUSBをインストール
+```
+
+以降は管理者権限不要。PowerShellから`uv run --python 3.12 --with pycryptodome python ..\..\scripts\streetpass_loop.py ...`で動かす
+(鍵・フレンドコードのファイルは`$env:STREETPASS_KEYSLOT_2E_FILE = "C:\..."`のように環境変数で指定)。アダプタは見えるのに
+ループが`claim: Operation not supported`で失敗する場合は、WinUSBがまだ当たっていないので、アダプタを抜き差しして
+ドライバがWinUSBになっているか確認する。
 
 ## 4. 実機から材料を取り出す
 
@@ -131,7 +145,7 @@ chmod 700 ../secrets
 | §4.2 | keyslot 0x2Eの鍵(`aes_keys.txt`から) | **全員(必須)** |
 | §4.1・§4.3 | CTRNANDの復号、本体に保存されている他のMiiの抽出 | Miiをまとめて抽出したい人の任意の手段(個別ならMii作成の「Miiを送る」のQRで足りる)。NANDバックアップが必要 |
 | §4.4・§4.5 | フレンドコード、最近遊んだソフト | 任意 |
-| §4.6・§4.7 | 雛形Boxの取得と、送信データの組み立て | **全員(必須)** |
+| §4.6・§4.7 | 送信するBoxの組み立て(ゼロから、または受信したBoxを雛形に) | **全員**(受信した雛形は任意) |
 
 材料は、**CFWが入った自分の3DS実機でGodMode9([`d0k3/GodMode9`](https://github.com/d0k3/GodMode9))
 を使って取得**します(`aes_keys.txt`、および§4.1・§4.3が必要な場合は`SysNAND (full)`の
@@ -231,20 +245,25 @@ principal IDを見つけられなかった)。実機の
 送信側のカスタマイズ用(`src/streetpass_emu/recently_played.py`参照)。
 未設定でも動作に支障はない。
 
-### 4.6 TMP Box bodyのベースファイル(雛形)
+### 4.6 送信するBoxを用意する(ゼロから、または雛形から)
 
-現状、TMP Box(すれちがいメッセージ)は完全にゼロから組み立てる機能は無く、
-**必ず一度は実機からの本物のキャプチャを雛形にする**必要がある(ヘッダ・アイコン・
-国名テーブル等、Mii/コメント以外の全域を正しく埋めるため)。
+実機の本物のキャプチャを雛形にする必要は**もうありません**。`scripts/build_tmp_box.py`が、Miiだけから(Mii QRコード
+画像、Miiファイル、またはまっさらなランダムMii)TMP Box(すれちがいメッセージ)を丸ごと組み立てます。
+[CUSTOM.md](CUSTOM.md)の「雛形なしでゼロから作る」を参照:
 
-§6の①の手順で、まず何も手を加えずに`live_streetpass_test.py`を実行し、自分の実機3DSが
-送ってくる**本物の送信データ**を1回受信する(`tmp_box_<mac>_<i>.bin`として保存される)。
-これを`secrets/outbound/`などに保存しておけば、以降は繰り返し雛形として使える。
-個人のMii・コメント文を含む実データなので、リポジトリには含めない。
+```bash
+python scripts/build_tmp_box.py --random-mii --nickname テスト --comment "こんにちは" -o ../secrets/outbound/my_send_box.bin
+python scripts/mii_plaza_editor.py verify ../secrets/outbound/my_send_box.bin
+```
 
-### 4.7 送信データを組み立てる
+従来どおり、**本物のキャプチャを雛形にする**こともできます(統計の領域や、自分の本物のプロフィール文など、コンソール固有の
+細部がそのまま残ります)。§6の①の手順で、何も手を加えずにループを実行し、自分の実機3DSが送ってくる**本物の送信データ**を
+1回受信します(`tmp_box_<mac>_<i>.bin`として保存される)。個人のMii・コメント文を含む実データなので、
+`secrets/outbound/`などに置き、リポジトリには含めないでください。
 
-雛形を書き換えて送信用のBoxを作る。`--new-ids`でヘッダID類を再生成し、実機側の
+### 4.7 雛形を書き換えて送信データにする
+
+受信したBoxを雛形にする場合は、書き換えて送信用のBoxを作る。`--new-ids`でヘッダID類を再生成し、実機側の
 重複排除に引っかからないようにする:
 
 ```bash
@@ -294,7 +313,7 @@ USB経由でのモニターモード操作には通常`sudo`が必要(`wifit3`�
 直接掴むため)。3DS本体は**スリープ状態(すれちがい通信待ち受け中)**にして
 おく。
 
-**① まず何もカスタマイズせず1回受信する(テンプレート取得)**:
+**①(任意)まず何もカスタマイズせず1回受信する(自分の実機が送ってくるBoxを保存。雛形に使える)**:
 
 ```bash
 sudo -E uv run --with pycryptodome python ../../scripts/live_streetpass_test.py \

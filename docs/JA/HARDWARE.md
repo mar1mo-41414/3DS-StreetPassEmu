@@ -51,10 +51,10 @@ wifit3のコミット`45fb760d`(2026-09-07)時点での宣言。**本プロジ�
 
 | アダプタ | チップ | USB ID | 確認済みの環境 |
 |---|---|---|---|
-| Buffalo WI-U3-866D | RTL8812AU | `0411:025d` | Linux x86_64 |
+| Buffalo WI-U3-866D | RTL8812AU | `0411:025d` | Linux x86_64、macOS(Apple Silicon)、Windows(x86-64、WinUSBドライバ) |
 | Buffalo WI-U2-433DM | RTL8821AU | `0411:0242` | Raspberry Pi 5(Linux)、macOS(Apple Silicon) |
 
-上記以外のアダプタ・OS(Windowsを含む)は**未検証**です。動作した/しなかった報告は歓迎します
+上記以外のアダプタ・OSは**未検証**です。Windowsでは、wifit3が初回にアダプタのドライバをWinUSBに差し替えます([SETUP.md](SETUP.md) §3)。動作した/しなかった報告は歓迎します
 (Issueに書く際の注意は[README](../../README.ja.md)の「Issueに貼らないでほしいもの」を参照)。
 
 ## 動作に必要なその他の条件

@@ -31,8 +31,8 @@ your real console, within radio range, through a USB Wi-Fi adapter.
 - Do all of the above from a **GUI** with tabs (send/receive, Mii, box, identity, files, log) that
   runs in your browser on Windows, macOS and Linux — [docs/EN/GUI.md](docs/EN/GUI.md)
 - Build a message from scratch (no genuine box as a template), and check whether Mii Plaza accepts
-  a message by running it through the game in an emulator — no console needed (real-console
-  confirmation of from-scratch boxes is still pending)
+  a message by running it through the game in an emulator — no console needed (from-scratch boxes
+  have been accepted by Mii Plaza on real consoles)
 - Documented message formats for a non-Mii-Plaza game (Animal Crossing: New Leaf; static
   analysis only — not yet verified or sent to a real console)
 
@@ -49,7 +49,7 @@ item, see **[docs/EN/STATUS.md](docs/EN/STATUS.md)**.
 | Send any Mii on the console (yours or others') as the sender | A picture of its **Mii QR code** (Mii Maker → "Send Miis") and a QR decoder (`zbarimg` or `pyzbar`, see [REQUIREMENTS](docs/EN/REQUIREMENTS.md)). **No NAND backup needed** |
 | (Optional) Extract Miis from the console in bulk, without making a QR code for each | The above **plus a NAND backup** (and `boot9.bin`, `otp.bin`) |
 
-Supported environment: Linux (including Raspberry Pi) or macOS, Python 3.10+. Windows is untested.
+Supported environment: Linux (including Raspberry Pi), macOS or Windows, Python 3.10+.
 
 ## Quick start
 

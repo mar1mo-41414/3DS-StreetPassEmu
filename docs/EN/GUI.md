@@ -58,6 +58,6 @@ it can see. The editing tabs work without any of this.
 ## Limits
 
 - The Mii is shown by nickname and IDs only; rendering its face needs the console's own Mii renderer.
-- Start / Stop drives real hardware and has been verified on the maintainer's setup only; other OSes and
-  adapters are untested (see [STATUS.md](STATUS.md)).
+- Start / Stop drives real hardware. It has been verified on Linux; on macOS and Windows only the command line
+  (`streetpass_loop.py`, which the GUI runs) has been verified so far (see [STATUS.md](STATUS.md)).
 - Do not paste screenshots or logs of the GUI into issues if they show IDs or file names from your console.

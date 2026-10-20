@@ -14,11 +14,11 @@ console, within radio range, through a USB Wi-Fi adapter.
 ## Verified environment
 
 - 3DS: a Japanese-region original Nintendo 3DS, StreetPass Mii Plaza (updated version)
-- OS: Linux x86_64, Raspberry Pi 5 (Linux), macOS (Apple Silicon)
+- OS: Linux x86_64, Raspberry Pi 5 (Linux), macOS (Apple Silicon), Windows (x86-64; command line)
 - USB Wi-Fi adapter: a chip with spoofed-MAC support is mandatory. For verified models and how
   to check before buying, see [HARDWARE.md](HARDWARE.md)
 - `pytest` passes with no hardware
-- **Untested**: other console regions, New 3DS models, Windows, adapters other than those above
+- **Untested**: other console regions, New 3DS models, adapters other than those above, the GUI's Start/Stop on macOS and Windows
 - What each feature requires (a NAND backup is never required to send a Mii: the Mii Maker's "Send Miis" QR code does the job; the NAND is an optional way to extract Miis in bulk) is in the
   table in [SETUP.md](SETUP.md) §0
 
@@ -34,9 +34,9 @@ console, within radio range, through a USB Wi-Fi adapter.
 | 6 | Derive the Wi-Fi-layer CCMP key on the PC alone, offline (no queries to the console). Assumes you prepare the AES keyslot 0x2E key material from your own console with GodMode9 | [SETUP.md](SETUP.md) §4.2, [PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md) §3 |
 | 7 | Alternative homebrew-based routes on the console: use keyslot 0x2E as an oracle (`homebrew/aes_oracle`), or inject a message through CECD's SPR path (`homebrew/spr_inject`) | `homebrew/aes_oracle/README.md`, the Makefile in each directory (devkitARM) |
 | 8 | Decode the structure of the StreetPass message body of a game other than Mii Plaza (Animal Crossing: New Leaf) by static analysis (**not yet verified on a real console**) | [GAME_FORMATS.md](GAME_FORMATS.md) |
-| 9 | **Generate a TMP Box from scratch** (no genuine box as a template): builds the header, TLVs, body and HMAC, with icon-image / SMDH import (**not yet verified on a real console; accepted in the emulator**) | [CUSTOM.md](CUSTOM.md) → `scripts/build_tmp_box.py` |
+| 9 | **Generate a TMP Box from scratch** (no genuine box as a template): builds the header, TLVs, body and HMAC, with icon-image / SMDH import (**accepted by Mii Plaza on real consoles from Linux, macOS and Windows hosts**; includes a random new Mii, prefecture, hobby / pet / dream lines) | [CUSTOM.md](CUSTOM.md) → `scripts/build_tmp_box.py` |
 | 10 | Run a box through Mii Plaza in an emulator to see whether it is **accepted**, with no console. Also tells which regions of the box acceptance depends on | [EMULATOR_TEST.md](EMULATOR_TEST.md) → `scripts/emu_receiver_test.py` / `emu_bisect_box.py` |
-| 11 | Do all of the editing and building from a browser **GUI** (tabs: send/receive, Mii, box, identity, files, log) on any OS; start/stop the send/receive loop from it | [GUI.md](GUI.md) → `python scripts/gui.py` (editing tabs tested; start/stop only verified on the maintainer's setup) |
+| 11 | Do all of the editing and building from a browser **GUI** (tabs: send/receive, Mii, box, identity, files, log) on any OS; start/stop the send/receive loop from it | [GUI.md](GUI.md) → `python scripts/gui.py` (editing tabs tested; Start/Stop verified on Linux, not yet on macOS or Windows — the command line works on all three) |
 
 ### Conditions for outgoing data to be accepted (Mii Plaza)
 
@@ -57,11 +57,11 @@ nothing appears in Mii Plaza). This was the pitfall that took the longest to fin
   of Animal Crossing: New Leaf is known from static analysis, but confirming it against data
   captured from a real console and integrating it into this project's send path (advertising a
   different title ID as a service) are not implemented.
-- **Confirming a from-scratch box on a real console**: the builder (`build_tmp_box.py`) exists
-  and Mii Plaza in the emulator accepts its output, but it has not been tried on real hardware.
-  The areas it does not fill (console-specific records, statistics) are all zero, so the visitor
-  may look sparser. The sender Mii must still be an existing 96-byte FFLStoreData; there is no
-  feature to synthesize a new Mii.
+- **Showing the sender's comment on a real console**: boxes built from scratch are accepted by Mii Plaza on real
+  consoles and show the residence, the "recently played" line and the profile lines, but in every real-console
+  test so far (including a genuine box sent back unchanged) the greeting **comment was never shown**, and the
+  visitor's profile screen has no comment field. The emulator shows it. Where and when a real console shows
+  it is unresolved. The areas the builder does not fill (console-specific records, statistics) are zero.
 - **Extracting your own friend code from the NAND backup automatically**: the Friend List
   save data embeds a 3DS-specific save-data filesystem that is not analyzed. Check it on the
   console screen and set it by hand (it is not required for StreetPass to work).
@@ -89,7 +89,7 @@ Priority is split into "worth tackling next" and "investigate only if it causes 
 
 | Problem | Summary |
 |---|---|
-| The leading u32 and following bytes of the comment field | The leading u32 is a clamped, monotonically increasing counter (not a character count). The small bytes after it (`+0x06`–`+0x09`) may be enumerations such as expression / speech bubble; unverified. Reading and writing the comment works with NUL-termination detection |
+| The comment-field header and how a real console picks the visitor lines | The leading u32 is a clamped, monotonically increasing counter. `+0x07` / `+0x08` / `+0x09` select the dog-or-cat, dream and hobby lines (partly mapped, see PROTOCOL_REFERENCE). A real console shows only one or two of them per meeting and lists unknown ones as "-" on the profile screen; how it chooses (progressive reveal over repeated meetings?) is unconfirmed, and the greeting comment itself has never appeared on a real console |
 | Unexplained parts of `IdentityPacket` | The meaning of the 8 bytes of `timestamp` after the first 4 (year/month/day) is unknown |
 | Generation rule for consoleID / MAC address | The rule is unknown. Random values are used instead, with no problems when talking to real consoles |
 | Start of the TMP Box body | The leading triple (title ID / version / display name of the title that last set the sender's Mii) is understood, followed by two constants (`1`, `0x80`) at +0x10 whose meaning is unknown; the display name is the first entry of the SMDH title table |
