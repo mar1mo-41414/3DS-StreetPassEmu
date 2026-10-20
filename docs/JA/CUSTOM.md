@@ -32,7 +32,9 @@ TLV・本文・HMACトレーラーを生成し、Mii Plazaが必要とする部�
 ([PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md)参照)。それ以外はゼロです。画像はアイコンの
 サイズに縮小されます(Pillowが必要)。出来たBoxは[EMULATOR_TEST.md](EMULATOR_TEST.md)で実機なしに
 確認でき、`mii_plaza_editor.py edit`もそのまま適用できます。コードからは
-`streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`。`--random-mii [--nickname 名前]`は、QRコードが無いときに、見た目も author_id / mii_id もランダムな新しいMiiを作ります。
+`streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`。`--random-mii`のMiiは既定で編集許可(他の人がコピーしてMiiスタジオで編集できる)です。`--no-allow-edit`で不許可、`--allow-edit`で
+他のMiiも許可にできます。`--birthday 4-14`、`--creator 名前`でプロフィールの誕生日と作成者も入れられます。
+`--random-mii [--nickname 名前]`は、QRコードが無いときに、見た目も author_id / mii_id もランダムな新しいMiiを作ります。
 `--new-ids`は任意のMiiに新しいIDを付けます。どちらも、Mii広場では新しい訪問者として扱われます。
 `--prefecture`(日本語名・英語名・JIS番号)で国・地域のコードと名前が入ります。指定しないと居住地は「_」と表示されます。
 `--hobby N`は「ぼく…が趣味なんだ」の一文を選びます(0=なし、判明しているのは 1=イラスト、8=映画、9=インターネット、10=ゲーム)。

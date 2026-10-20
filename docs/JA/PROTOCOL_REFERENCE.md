@@ -361,6 +361,8 @@ CCM認証タグはメッセージ長全体(96 vs 88)に依存するため一致�
 | 0x00 | 4B | バージョン等ビットフィールド |
 | 0x04 | 8B | `author_id` — Miiを作成したコンソールのID |
 | 0x0C | 10B | `mii_id`(`avatar_id` 4B + `client_id`/deviceHash 6B)。deviceHashは実機の`original_mac`と一致確認済み。**先頭8バイトがAES-CCMのnonceとしてそのまま再利用される**。先頭4バイトは「flags:4+timestamp:28」ではなく、**先頭バイトの上位4bitが常に`0x9`固定**(残り28bitはほぼ自由)というのが実際の生成規則 —実機に保存されている本物のmii_id先頭バイトが`0x9d`だったことと、`kazuki-4ys/MiiInfoEditorCTR`の生成コード(`0x90 + random(0,16)`)から確認済み。この制約を満たさない`mii_id`をQRコードとして実機に読ませると「これはMiiのQRコードではありません」と拒否される(`mii_qr.new_mii_id()`で修正済み) |
+| 0x01 (bit 0) | — | **編集を許可(コピー可)**。ヘッダ1バイト目。実Boxで見た他人のMiiには立っているものと、本体持ち主自身のMiiのように立っていないものがある |
+| 0x30 (bit 0) | — | **公開**: 0=共有してよい(実Boxで見たMiiは全て0) |
 | 0x1A | 20B | `mii_name`(UTF-16LE、10文字) |
 | 0x48 | 20B | `creator_name`(UTF-16LE、10文字) |
 | 0x5E | 2B(BE) | `checksum` = CRC16/XMODEM(`data[0:0x5E]`) |

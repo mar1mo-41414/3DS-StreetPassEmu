@@ -321,3 +321,29 @@ def test_title_sets_the_long_name_too_and_profile_bytes():
     assert (body[0x3F67], body[0x3F68], body[0x3F69]) == (1, 1, 8)
     with pytest.raises(EditorError, match="out_of_range"):
         e.set_fields({"pet": 3})
+
+
+def test_edit_permission_flags_and_birthday():
+    from streetpass_emu.mii_random import flags_of, random_mii, set_birthday, set_flags
+    m = random_mii("テスト")
+    assert flags_of(m) == (True, True)                          # editable and public by default
+    locked = set_flags(m, allow_copy=False)
+    assert flags_of(locked) == (False, True) and locked[1] & 1 == 0
+    assert int.from_bytes(locked[0x5E:0x60], "big") == crc16_xmodem(locked[:0x5E])
+    assert flags_of(set_flags(locked, public=False)) == (False, False)
+    b = set_birthday(m, 4, 14)
+    w = int.from_bytes(b[0x18:0x1A], "little")
+    assert ((w >> 5) & 0x1F, (w >> 1) & 0xF) == (14, 4)          # same layout as a real Mii (April 14)
+    e = Editor()
+    e.set_mii(locked)
+    assert e.mii_info()["allow_copy"] is False
+    e.set_mii_flags(allow_copy=True)
+    v = e.verify()
+    assert e.mii_info()["allow_copy"] is True and v["mii_crc"] and v["mii_tag"]
+
+
+def test_flags_api(gui):
+    _app, call = gui
+    call("/api/mii", {"action": "random_mii", "allow_copy": False})
+    st, s = call("/api/mii", {"action": "flags", "allow_copy": True})
+    assert st == 200 and s["mii"]["allow_copy"] is True and s["verify"]["mii_tag"]

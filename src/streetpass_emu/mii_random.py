@@ -22,8 +22,44 @@ def _utf16(text: str, size: int) -> bytes:
     return raw + bytes(size - len(raw))
 
 
-def random_mii(nickname: Optional[str] = None, creator: str = "", rng: Optional[random.Random] = None) -> bytes:
-    """A valid, random 96-byte FFLStoreData. ``nickname`` is at most 10 characters (random if omitted)."""
+def set_flags(mii: bytes, allow_copy: Optional[bool] = None, public: Optional[bool] = None) -> bytes:
+    """Sets the two sharing switches of a Mii and fixes its checksum (``None`` leaves a switch as it is).
+
+    allow_copy: header byte 1, bit 0 -- "allow copying" = other people may copy the Mii and edit it in Mii Maker.
+    public:     byte 0x30, bit 0 cleared -- the Mii may be shared with others (every Mii seen in a real StreetPass
+                box has it cleared).
+    """
+    m = bytearray(mii)
+    if allow_copy is not None:
+        m[1] = (m[1] | 0x01) if allow_copy else (m[1] & ~0x01)
+    if public is not None:
+        m[0x30] = (m[0x30] & ~0x01) if public else (m[0x30] | 0x01)
+    m[CHECKSUM_OFFSET:CHECKSUM_OFFSET + 2] = crc16_xmodem(bytes(m[:CHECKSUM_OFFSET])).to_bytes(2, "big")
+    return bytes(m)
+
+
+def flags_of(mii: bytes) -> tuple[bool, bool]:
+    """``(allow_copy, public)`` of a Mii."""
+    return bool(mii[1] & 0x01), not (mii[0x30] & 0x01)
+
+
+def set_birthday(mii: bytes, month: int, day: int) -> bytes:
+    """Sets the birthday (month 1-12, day 1-31; 0/0 = not set). The word at 0x18 is, from the top bit:
+    1 + 1 unknown, 4 favourite colour, 5 day, 4 month, 1 gender (confirmed on a real Mii: April 14)."""
+    if not (0 <= month <= 12 and 0 <= day <= 31):
+        raise ValueError("birthday out of range")
+    m = bytearray(mii)
+    w = int.from_bytes(m[0x18:0x1A], "little")
+    w = (w & ~(0x1F << 5 | 0xF << 1)) | (day << 5) | (month << 1)
+    m[0x18:0x1A] = w.to_bytes(2, "little")
+    m[CHECKSUM_OFFSET:CHECKSUM_OFFSET + 2] = crc16_xmodem(bytes(m[:CHECKSUM_OFFSET])).to_bytes(2, "big")
+    return bytes(m)
+
+
+def random_mii(nickname: Optional[str] = None, creator: str = "", rng: Optional[random.Random] = None,
+               allow_copy: bool = True, public: bool = True) -> bytes:
+    """A valid, random 96-byte FFLStoreData. ``nickname`` is at most 10 characters (random if omitted).
+    ``allow_copy`` lets other people copy and edit it in Mii Maker (default on)."""
     r = rng or random.SystemRandom()
     name = (nickname if nickname is not None else r.choice(NICKNAMES))[:10]
     m = bytearray(FFL_STORE_DATA_SIZE)
@@ -48,5 +84,4 @@ def random_mii(nickname: Optional[str] = None, creator: str = "", rng: Optional[
     struct.pack_into("<H", m, 0x44, (4 << 7) | (10 << 11))           # no glasses
     struct.pack_into("<H", m, 0x46, (4 << 1) | (2 << 5) | (20 << 10))  # mole present in the data but disabled
     m[0x48:0x5C] = _utf16(creator[:10], 20)
-    m[CHECKSUM_OFFSET:CHECKSUM_OFFSET + 2] = crc16_xmodem(bytes(m[:CHECKSUM_OFFSET])).to_bytes(2, "big")
-    return bytes(m)
+    return set_flags(bytes(m), allow_copy, public)

@@ -367,6 +367,8 @@ original byte for byte.
 | 0x00 | 4B | Version etc. bitfield |
 | 0x04 | 8B | `author_id` — the ID of the console that created the Mii |
 | 0x0C | 10B | `mii_id` (`avatar_id` 4B + `client_id`/deviceHash 6B). The deviceHash was confirmed to match the console's `original_mac`. **The first 8 bytes are reused as-is as the AES-CCM nonce.** The first 4 bytes are not "flags:4 + timestamp:28": the actual generation rule is that **the upper 4 bits of the first byte are always fixed to `0x9`** (the remaining 28 bits are essentially free) — confirmed from the fact that the first byte of a genuine `mii_id` stored on a real console was `0x9d`, and from the generation code of `kazuki-4ys/MiiInfoEditorCTR` (`0x90 + random(0,16)`). If you have a real console load a QR code whose `mii_id` doesn't satisfy this constraint, it is rejected as "This is not a Mii QR code" (handled by `mii_qr.new_mii_id()`) |
+| 0x01 (bit 0) | — | **Allow copying** (edit permission in Mii Maker); header byte 1. Set on the Miis of other people seen in real boxes, clear on the console owner's own Mii |
+| 0x30 (bit 0) | — | **Sharing**: clear = may be shared (clear in every Mii seen in a real StreetPass box) |
 | 0x1A | 20B | `mii_name` (UTF-16LE, 10 characters) |
 | 0x48 | 20B | `creator_name` (UTF-16LE, 10 characters) |
 | 0x5E | 2B (BE) | `checksum` = CRC16/XMODEM(`data[0:0x5E]`) |

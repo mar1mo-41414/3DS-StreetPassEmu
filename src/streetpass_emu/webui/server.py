@@ -134,8 +134,10 @@ class App:
             e.spec.mii = b""
         elif a == "random_mii":
             from ..mii_random import random_mii
-            e.spec.mii = random_mii(b.get("nickname") or None)
+            e.spec.mii = random_mii(b.get("nickname") or None, allow_copy=bool(b.get("allow_copy", True)))
             e.spec.mii_id_copy = None
+        elif a == "flags":
+            e.set_mii_flags(b.get("allow_copy"), b.get("public"))
         elif a == "random_author":
             e.randomize_author_id()
         elif a == "random_mii_id":

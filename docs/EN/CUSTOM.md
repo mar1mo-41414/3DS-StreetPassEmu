@@ -34,6 +34,8 @@ header, TLVs, body and HMAC trailer are generated; only the pieces Mii Plaza nee
 the icon sizes (needs Pillow). The result can be checked without a console with
 [EMULATOR_TEST.md](EMULATOR_TEST.md), and `mii_plaza_editor.py edit` can still be applied to it.
 In code: `streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`.
+`--random-mii` Miis are editable by default (others may copy them into Mii Maker and edit them); `--no-allow-edit` locks them and
+`--allow-edit` unlocks any other Mii. `--birthday 4-14` and `--creator NAME` fill in the profile's birthday and creator.
 `--random-mii [--nickname NAME]` makes a brand-new random Mii (random look and fresh author_id / mii_id) when you have no
 QR code, and `--new-ids` gives any Mii new IDs; either way Mii Plaza treats the sender as a new visitor.
 `--prefecture` (a Japanese name, an English name or the JIS number) fills in the country and region codes and names;

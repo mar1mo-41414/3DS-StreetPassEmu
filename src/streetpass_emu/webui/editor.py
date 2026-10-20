@@ -17,6 +17,7 @@ import zlib
 from typing import Optional
 
 from .. import icon
+from ..mii_random import flags_of, set_birthday, set_flags
 from ..mii_qr import (AUTHOR_ID_OFFSET, CHECKSUM_OFFSET, FFL_STORE_DATA_SIZE, MII_ID_OFFSET, NICKNAME_LEN,
                       NICKNAME_OFFSET, crc16_xmodem, new_mii_id)
 from ..regions import COUNTRY_JAPAN, JP_PREFECTURES, find_prefecture, prefecture_of_code
@@ -126,7 +127,10 @@ class Editor:
         m = self.spec.mii
         if len(m) != FFL_STORE_DATA_SIZE:
             return None
+        copy, public = flags_of(m)
         return {
+            "allow_copy": copy, "public": public,
+            "creator": m[0x48:0x5C].decode("utf-16le", "replace").rstrip("\0"),
             "nickname": m[NICKNAME_OFFSET:NICKNAME_OFFSET + NICKNAME_LEN].decode("utf-16le", "replace").rstrip("\0"),
             "author_id": _hex(m[AUTHOR_ID_OFFSET:AUTHOR_ID_OFFSET + 8]),
             "mii_id": _hex(m[MII_ID_OFFSET:MII_ID_OFFSET + 10]),
@@ -140,6 +144,11 @@ class Editor:
         self.spec.mii = bytes(m)
         if off == MII_ID_OFFSET:
             self.spec.mii_id_copy = None
+
+    def set_mii_flags(self, allow_copy=None, public=None) -> None:
+        """Edit permission (copy allowed) and sharing of the sender Mii; the checksum is fixed."""
+        self._require_mii()
+        self.spec.mii = set_flags(self.spec.mii, allow_copy, public)
 
     def set_ids(self, author_id: Optional[str] = None, mii_id: Optional[str] = None) -> None:
         for name, val, off, n in (("author_id", author_id, AUTHOR_ID_OFFSET, 8), ("mii_id", mii_id, MII_ID_OFFSET, 10)):

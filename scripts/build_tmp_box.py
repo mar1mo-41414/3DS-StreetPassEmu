@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from streetpass_emu import icon  # noqa: E402
 from streetpass_emu.mii_qr import crc16_xmodem, new_mii_id  # noqa: E402
-from streetpass_emu.mii_random import random_mii  # noqa: E402
+from streetpass_emu.mii_random import random_mii, set_birthday, set_flags  # noqa: E402
 from streetpass_emu.regions import COUNTRY_JAPAN, find_prefecture  # noqa: E402
 from streetpass_emu.mii_qr_image import MiiQrError, mii_from_qr_image  # noqa: E402
 from streetpass_emu.smdh import Title, parse_smdh  # noqa: E402
@@ -35,6 +35,11 @@ def main() -> int:
     g.add_argument("--random-mii", action="store_true", help="make a new random Mii (a new visitor, no source needed)")
     g.add_argument("--mii-qr", type=Path, help="image of a Mii QR code (needs zbarimg or pyzbar)")
     ap.add_argument("--nickname", help="nickname for --random-mii (up to 10 characters)")
+    ap.add_argument("--allow-edit", dest="allow_edit", action="store_true", default=None,
+                    help="let others copy and edit the Mii in Mii Maker (the default for --random-mii)")
+    ap.add_argument("--no-allow-edit", dest="allow_edit", action="store_false")
+    ap.add_argument("--creator", help="creator name shown on the Mii (up to 10 characters)")
+    ap.add_argument("--birthday", help="MONTH-DAY, e.g. 4-14")
     ap.add_argument("--new-ids", action="store_true", help="give the Mii a new author_id / mii_id (a new visitor)")
     ap.add_argument("--comment", default="")
     ap.add_argument("--notice", default=BoxSpec.notice)
@@ -58,11 +63,22 @@ def main() -> int:
 
     try:
         if a.random_mii:
-            mii = random_mii(a.nickname)
+            mii = random_mii(a.nickname, creator=a.creator or "", allow_copy=True if a.allow_edit is None else a.allow_edit)
         else:
             mii = mii_from_qr_image(a.mii_qr) if a.mii_qr else mii_from_blob_or_raw(a.mii.read_bytes())
     except MiiQrError as e:
         ap.error(str(e))
+    if a.allow_edit is not None and not a.random_mii:
+        mii = set_flags(mii, allow_copy=a.allow_edit)
+    if a.birthday:
+        mo, dy = (int(x) for x in a.birthday.replace("/", "-").split("-"))
+        mii = set_birthday(mii, mo, dy)
+    if a.creator and not a.random_mii:
+        m2 = bytearray(mii)
+        raw = a.creator[:10].encode("utf-16le")
+        m2[0x48:0x5C] = raw + bytes(20 - len(raw))
+        m2[0x5E:0x60] = crc16_xmodem(bytes(m2[:0x5E])).to_bytes(2, "big")
+        mii = bytes(m2)
     if a.new_ids:
         m = bytearray(mii)
         m[4:12] = os.urandom(8)
