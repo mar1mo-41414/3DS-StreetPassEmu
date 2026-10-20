@@ -137,6 +137,14 @@ details summary{cursor:pointer;color:var(--acc2);margin-bottom:8px}
     </div>
   </div>
   <div class="card">
+    <h2 data-i="mii_rand"></h2>
+    <div class="row">
+      <label class="wide"><span data-i="mii_rand_name"></span><input type="text" id="randName" maxlength="10"></label>
+      <button class="b" id="btnRandMii" data-i="mii_rand_btn"></button>
+    </div>
+    <div class="mut" data-i="mii_rand_note"></div>
+  </div>
+  <div class="card">
     <h2 data-i="mii_qr"></h2>
     <div class="drop" id="qrDrop"><span data-i="drop_qr"></span><br><input type="file" id="qrFile" accept="image/*"></div>
     <div class="mut" style="margin-top:8px" data-i="qr_note"></div>
@@ -277,7 +285,7 @@ s_keyslot:"キースロット0x2Eの鍵ファイル(JSON)",s_friend:"フレン�
 import_keys:"aes_keys.txt から鍵ファイルを作る",import_keys_note:"GodMode9で取った aes_keys.txt を選ぶと、必要な2行だけを取り出して workspace に保存します。鍵の値は画面に表示しません。",
 adv:"詳細設定(通常は変えなくて大丈夫)",s_fresh:"サイクルごとにメッセージIDとMiiのmii_idを作り直す(送信Miiの識別情報が毎回変わります)",s_verbose:"全フレームの詳細ログを出す(ログが非常に長くなります)",s_sleep:"サイクル間の待ち(秒)",s_backoff:"起動失敗時の再試行待ち(秒)",s_retries:"起動の再試行回数",s_probe:"自分からも探す間隔(秒)",s_adv_note:"「自分からも探す間隔」は、受信待ちだけでなく実機と同じように自分からも定期的に呼びかけます(空=しない、実験的)。起動の再試行は、USBアダプタが使用中などで立ち上がらないときの待ちと回数です。",s_match_id:"Wi-Fi層の識別情報を送信Miiに合わせる(実験的)",s_match_con:"さらに接続層のIDも送信Miiから導出する(上と併用・実験的)",s_extra:"その他のオプション(コマンドライン形式)",s_help:"使えるオプション一覧を表示",s_extra_note:"上のスイッチに無いオプションを、streetpass_loop.py にそのまま渡せます。例: --outbound-title-id 0x00020800。一覧は右のボタンで表示できます(uvとwifit3が必要)。普通は空で構いません。",save_settings:"設定を保存",
 received:"受信したBox",none:"(なし)",
-mii_cur:"現在のMii",mii_dl:"Miiファイルを保存",mii_clear:"Miiを外す",mii_qr:"QRコード画像から",drop_qr:"Mii QRコードの画像をここにドロップ、または選択",
+mii_cur:"現在のMii",mii_dl:"Miiファイルを保存",mii_clear:"Miiを外す",mii_rand:"ランダムなMiiを作る",mii_rand_name:"ニックネーム(空ならランダム、10文字まで)",mii_rand_btn:"新しいMiiを作る",mii_rand_note:"見た目(パーツの種類と色)も識別情報(author_id・mii_id)もランダムに作ります。実機のMii広場では新しい訪問者(初めまして)として扱われます。QRコードが無くても試せます。",mii_qr:"QRコード画像から",drop_qr:"Mii QRコードの画像をここにドロップ、または選択",
 qr_note:"Mii作成の「Miiを送る」で作ったQRコードの画像を読み込みます。QRデコーダ(pyzbar / opencv / zbarimg のどれか)が必要です。",
 mii_file:"ファイルから",mii_file_lbl:"96バイトのMiiファイル、または112バイトの暗号化Mii",mii_file_note:"extract_console_miis.py で取り出したMii等。",
 mii_from_box:"受信したBoxのMiiを使う",use_mii:"このMiiを使う",open_box:"Boxとして開く",
@@ -317,7 +325,7 @@ s_keyslot:"Keyslot 0x2E key file (JSON)",s_friend:"Friend code (optional)",s_fri
 import_keys:"Create the key file from aes_keys.txt",import_keys_note:"Pick the aes_keys.txt dumped with GodMode9; only the two needed lines are extracted into the workspace. Key values are never shown.",
 adv:"Advanced settings (normally leave as is)",s_fresh:"Regenerate message IDs and the Mii's mii_id every cycle (the sender's identity changes each time)",s_verbose:"Log every frame (the log gets very long)",s_sleep:"Pause between cycles (s)",s_backoff:"Retry wait on start-up failure (s)",s_retries:"Start-up retries",s_probe:"Also search actively every (s)",s_adv_note:"\"Also search actively\" makes the PC call out periodically like a real console instead of only listening (empty = off, experimental). The retry settings apply when the USB adapter cannot be brought up, e.g. because it is in use.",s_match_id:"Match the Wi-Fi layer identity to the sender Mii (experimental)",s_match_con:"Also derive the connection-layer IDs from the sender Mii (needs the one above, experimental)",s_extra:"Other options (command-line form)",s_help:"Show the available options",s_extra_note:"Passed to streetpass_loop.py as they are, for options the switches above do not cover, e.g. --outbound-title-id 0x00020800. The button on the right lists them (needs uv and wifit3). Usually leave this empty.",save_settings:"Save settings",
 received:"Received boxes",none:"(none)",
-mii_cur:"Current Mii",mii_dl:"Save Mii file",mii_clear:"Remove Mii",mii_qr:"From a QR code image",drop_qr:"Drop a Mii QR code image here, or choose one",
+mii_cur:"Current Mii",mii_dl:"Save Mii file",mii_clear:"Remove Mii",mii_rand:"Make a random Mii",mii_rand_name:"Nickname (empty = random, up to 10 characters)",mii_rand_btn:"Make a new Mii",mii_rand_note:"The look (part types and colours) and the identity (author_id, mii_id) are random. Mii Plaza on a real console treats the sender as a new visitor (first meeting). No QR code needed.",mii_qr:"From a QR code image",drop_qr:"Drop a Mii QR code image here, or choose one",
 qr_note:"Load an image of the QR code made by the Mii Maker's \"Send Miis\". Needs a QR decoder (pyzbar, opencv or zbarimg).",
 mii_file:"From a file",mii_file_lbl:"A 96-byte Mii file or a 112-byte encrypted Mii",mii_file_note:"E.g. a Mii extracted with extract_console_miis.py.",
 mii_from_box:"Use the Mii of a received box",use_mii:"Use this Mii",open_box:"Open as box",
@@ -446,6 +454,7 @@ $("qrFile").onchange=e=>e.target.files[0]&&miiFromQr(e.target.files[0]);
 const dz=$("qrDrop");["dragenter","dragover"].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.remove("over")}));
 dz.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f)miiFromQr(f)});
 $("miiFile").onchange=async e=>{const f=e.target.files[0];if(f)await act("/api/mii",{action:"file",data:b64(await readFile(f))},"done")};
+$("btnRandMii").onclick=()=>act("/api/mii",{action:"random_mii",nickname:$("randName").value},"done");
 $("miiClear").onclick=()=>act("/api/mii",{action:"clear"});
 $("smdhFile").onchange=async e=>{const f=e.target.files[0];if(f)await act("/api/smdh",{data:b64(await readFile(f))},"done")};
 $("btnSetIds").onclick=()=>act("/api/mii",{action:"set_ids",author_id:$("i_author").value.trim(),mii_id:$("i_miiid").value.trim()},"done");

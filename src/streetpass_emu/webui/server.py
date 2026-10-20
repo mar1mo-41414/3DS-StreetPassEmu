@@ -132,6 +132,10 @@ class App:
             e.set_mii(_b64(b["data"]))
         elif a == "clear":
             e.spec.mii = b""
+        elif a == "random_mii":
+            from ..mii_random import random_mii
+            e.spec.mii = random_mii(b.get("nickname") or None)
+            e.spec.mii_id_copy = None
         elif a == "random_author":
             e.randomize_author_id()
         elif a == "random_mii_id":

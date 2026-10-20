@@ -13,12 +13,15 @@ scripts/streetpass_loop.py --outbound-tmp-box-body.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from streetpass_emu import icon  # noqa: E402
+from streetpass_emu.mii_qr import crc16_xmodem, new_mii_id  # noqa: E402
+from streetpass_emu.mii_random import random_mii  # noqa: E402
 from streetpass_emu.regions import COUNTRY_JAPAN, find_prefecture  # noqa: E402
 from streetpass_emu.mii_qr_image import MiiQrError, mii_from_qr_image  # noqa: E402
 from streetpass_emu.smdh import Title, parse_smdh  # noqa: E402
@@ -29,7 +32,10 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--mii", type=Path, help="96-byte FFLStoreData, or a 112-byte Mii blob / QR payload")
+    g.add_argument("--random-mii", action="store_true", help="make a new random Mii (a new visitor, no source needed)")
     g.add_argument("--mii-qr", type=Path, help="image of a Mii QR code (needs zbarimg or pyzbar)")
+    ap.add_argument("--nickname", help="nickname for --random-mii (up to 10 characters)")
+    ap.add_argument("--new-ids", action="store_true", help="give the Mii a new author_id / mii_id (a new visitor)")
     ap.add_argument("--comment", default="")
     ap.add_argument("--notice", default=BoxSpec.notice)
     ap.add_argument("--title", help="name of the 'last used app' shown with the visitor")
@@ -47,9 +53,18 @@ def main() -> int:
     a = ap.parse_args()
 
     try:
-        mii = mii_from_qr_image(a.mii_qr) if a.mii_qr else mii_from_blob_or_raw(a.mii.read_bytes())
+        if a.random_mii:
+            mii = random_mii(a.nickname)
+        else:
+            mii = mii_from_qr_image(a.mii_qr) if a.mii_qr else mii_from_blob_or_raw(a.mii.read_bytes())
     except MiiQrError as e:
         ap.error(str(e))
+    if a.new_ids:
+        m = bytearray(mii)
+        m[4:12] = os.urandom(8)
+        m[12:22] = new_mii_id()
+        m[0x5E:0x60] = crc16_xmodem(bytes(m[:0x5E])).to_bytes(2, "big")
+        mii = bytes(m)
     country, region, country_names, region_names = a.country, a.region, None, None
     if a.prefecture:
         found = find_prefecture(a.prefecture)

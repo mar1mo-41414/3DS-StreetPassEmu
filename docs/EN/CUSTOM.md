@@ -34,6 +34,8 @@ header, TLVs, body and HMAC trailer are generated; only the pieces Mii Plaza nee
 the icon sizes (needs Pillow). The result can be checked without a console with
 [EMULATOR_TEST.md](EMULATOR_TEST.md), and `mii_plaza_editor.py edit` can still be applied to it.
 In code: `streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`.
+`--random-mii [--nickname NAME]` makes a brand-new random Mii (random look and fresh author_id / mii_id) when you have no
+QR code, and `--new-ids` gives any Mii new IDs; either way Mii Plaza treats the sender as a new visitor.
 `--prefecture` (a Japanese name, an English name or the JIS number) fills in the country and region codes and names;
 without it the console shows "_" as the residence. `--hobby N` picks the "…is my hobby" line (0 = none; known: 1 illustration,
 9 internet, 10 games). Missing icons become a grey stand-in (all-zero data would be a black square). **Boxes built this way were

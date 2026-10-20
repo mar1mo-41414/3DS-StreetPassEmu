@@ -283,3 +283,25 @@ def test_hobby_byte_and_placeholder_icons():
         e.set_fields({"hobby": 28})
     body = e.build()[0xD14:]
     assert body[0x2038:0x2038 + 1152] != bytes(1152)      # a missing icon is a grey placeholder, not black
+
+
+def test_random_mii_is_valid_and_new_every_time():
+    import random as _r
+    from streetpass_emu.mii_random import random_mii
+    from streetpass_emu.mii_qr import MII_ID_OFFSET
+    a, b = random_mii("テスト"), random_mii("テスト")
+    assert len(a) == 96 and a[4:22] != b[4:22]                   # fresh author_id / mii_id every call
+    assert a[MII_ID_OFFSET] >> 4 == 9                            # the rule for a valid mii_id
+    assert a[0x1A:0x2E].decode("utf-16le").rstrip("\0") == "テスト"
+    assert int.from_bytes(a[0x5E:0x60], "big") == crc16_xmodem(a[:0x5E])
+    assert random_mii(rng=_r.Random(1))[0x2E:0x48] == random_mii(rng=_r.Random(1))[0x2E:0x48]   # the look follows the rng
+    e = Editor()
+    e.set_mii(a)
+    v = e.verify()
+    assert v["mii_crc"] and v["mii_tag"] and v["hmac"]
+
+
+def test_random_mii_api(gui):
+    _app, call = gui
+    st, s = call("/api/mii", {"action": "random_mii", "nickname": "ランダム"})
+    assert st == 200 and s["mii"]["nickname"] == "ランダム" and s["verify"]["mii_tag"]
