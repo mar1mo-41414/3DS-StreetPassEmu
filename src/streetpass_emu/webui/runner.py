@@ -30,6 +30,7 @@ DEFAULT_SETTINGS = {
     "cycle_seconds": 120,
     "cycles": 0,
     "fresh_each_cycle": False,
+    "fresh_message_ids": False,
     "verbose": False,
     "sleep_between_cycles": 2.0,
     "retry_backoff": 5.0,
@@ -191,7 +192,8 @@ class Runner:
                 "--retry-backoff", str(float(s["retry_backoff"])), "--max-retries", str(int(s["max_retries"]))]
         if str(s["probe_interval"]).strip():
             cmd += ["--probe-interval-seconds", str(float(s["probe_interval"]))]
-        for key, flag in (("fresh_each_cycle", "--fresh-each-cycle"), ("verbose", "--verbose"),
+        for key, flag in (("fresh_each_cycle", "--fresh-each-cycle"), ("fresh_message_ids", "--fresh-message-ids-each-cycle"),
+                          ("verbose", "--verbose"),
                           ("match_identity", "--match-identity-to-mii"),
                           ("match_console_id", "--match-console-id-to-mii")):
             if s[key]:

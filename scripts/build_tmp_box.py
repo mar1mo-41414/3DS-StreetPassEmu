@@ -40,6 +40,8 @@ def main() -> int:
     ap.add_argument("--notice", default=BoxSpec.notice)
     ap.add_argument("--title", help="name of the 'last used app' shown with the visitor")
     ap.add_argument("--smdh", type=Path, help=".smdh file: sets the app names and both icons")
+    ap.add_argument("--app-title-id", help="title ID (16 hex digits) of the \"last app\"; the console looks the name up from it when it knows the title")
+    ap.add_argument("--app-title-version", help="its version (4 hex digits)")
     ap.add_argument("--header-icon", type=Path, help="image, scaled to 40x40")
     ap.add_argument("--small-icon", type=Path, help="image, scaled to 24x24")
     ap.add_argument("--large-icon", type=Path, help="image, scaled to 48x48")
@@ -83,6 +85,8 @@ def main() -> int:
         large_icon=icon.from_png(a.large_icon, icon.LARGE_SIZE) if a.large_icon else (smdh.large_icon if smdh else None),
         country=country, region=region, country_names=country_names, region_names=region_names,
         visit_counter=a.counter, hobby=a.hobby, pet=a.pet, dream=a.dream,
+        **({"app_title_id": int(a.app_title_id, 16)} if a.app_title_id else {}),
+        **({"app_title_version": int(a.app_title_version, 16)} if a.app_title_version else {}),
     )
     msg = build_message(spec)
     a.output.write_bytes(msg)

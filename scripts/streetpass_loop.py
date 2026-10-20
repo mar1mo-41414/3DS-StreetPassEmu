@@ -136,6 +136,8 @@ def _build_outbound_box(args: argparse.Namespace) -> tuple[bytes | None, int, ob
     if args.fresh_each_cycle:
         box.randomize_ids()
         box.randomize_mii_id()
+    elif args.fresh_message_ids_each_cycle:
+        box.randomize_ids()  # new messageId etc. every cycle, the Mii's identity stays the same
     box.recompute_hmac()
 
     mii_identity = None
@@ -308,6 +310,9 @@ async def main() -> int:
                          help="毎サイクル、この文字列にコメント欄を書き換える(元と同じ文字数が必須)")
     parser.add_argument("--fresh-each-cycle", action="store_true",
                          help="サイクル毎にヘッダID(messageId等)と送信者Miiのmii_idを再生成する")
+    parser.add_argument("--fresh-message-ids-each-cycle", action="store_true",
+                         help="サイクル毎にヘッダID(messageId等)だけを再生成する(送信者Miiのmii_idは変えない)。"
+                              "同じMiiで何度も「n回目」を送るときに使う")
     parser.add_argument("--match-identity-to-mii", action="store_true",
                          help="調査結果の実験: WiFi層IdentityPacketの"
                               "transferable_id/original_macを、送信するTMP Boxの送信者Miiの"
