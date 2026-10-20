@@ -19,11 +19,15 @@ python scripts/mii_plaza_editor.py verify <出力.bin>   # 送信前に必ず確
 
 ```bash
 python scripts/build_tmp_box.py --mii my_mii.bin --comment "こんにちは" -o box.bin
+# または、Mii QRコードの画像から送信者Miiを取る(zbarimgまたはpyzbarが必要):
+python scripts/build_tmp_box.py --mii-qr my_mii_qr.png --comment "こんにちは" -o box.bin
 # 任意: --smdh app.smdh | --title 名前 | --large-icon img.png --small-icon img.png \
 #       --header-icon img.png | --country 1 --region 41 | --counter N
 ```
 
-`--mii`は生の96バイトFFLStoreData、または112バイトの暗号化Mii blob/MiiQRペイロード。ヘッダ・
+`--mii`は生の96バイトFFLStoreData、または112バイトの暗号化Mii blob/MiiQRペイロード。`--mii-qr`は
+Mii Makerが表示するQRコードの画像を読む(CCMタグとCRC16を検証するので、壊れた/Mii以外のQRは拒否される)。
+本物のQRコード由来のMiiは本物のauthor_id/mii_idを持つので、乱数生成したIDが拒否される問題を避けられる。ヘッダ・
 TLV・本文・HMACトレーラーを生成し、Mii Plazaが必要とする部分だけを埋めます
 ([PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md)参照)。それ以外はゼロです。画像はアイコンの
 サイズに縮小されます(Pillowが必要)。出来たBoxは[EMULATOR_TEST.md](EMULATOR_TEST.md)で実機なしに

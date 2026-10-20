@@ -49,7 +49,8 @@ pytest   # 全テスト(ハードウェア不要)が通ることを確認
 ```
 
 依存: `pycryptodome>=3.20`(必須)、`pytest>=8.0` + `pyctr>=0.7`(dev用、
-NANDイメージの読み込みテスト等に使用)。
+NANDイメージの読み込みテスト等に使用)。用途別の必要なソフトウェア・ハードウェア
+(Pillow、zbar、AzaharPlus、Xvfb等)の一覧は[REQUIREMENTS.md](REQUIREMENTS.md)にあります。
 
 ## 3. `tools/wifit3` のセットアップ
 

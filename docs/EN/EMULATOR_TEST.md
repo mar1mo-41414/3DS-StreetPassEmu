@@ -17,6 +17,8 @@ a real console.
 
 ## What you need
 
+(All software for every task is listed in [REQUIREMENTS.md](REQUIREMENTS.md).)
+
 - **AzaharPlus** (the fork that can start encrypted titles directly), on Linux.
 - **The Mii Plaza title from your own console**: the base title's `.app` (NCCH) and the SD-card
   update title (`0004000E00020800` for the Japanese version; the receiver addresses used by

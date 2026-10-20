@@ -63,6 +63,7 @@ message, then rewriting and sending — is in **[docs/EN/SETUP.md](docs/EN/SETUP
 | File | Contents |
 |---|---|
 | [docs/EN/STATUS.md](docs/EN/STATUS.md) | What works (with reproduction steps) / what does not yet / open problems |
+| [docs/EN/REQUIREMENTS.md](docs/EN/REQUIREMENTS.md) | Required software and hardware, per task (Python packages, system tools, emulator, ...) |
 | [docs/EN/HARDWARE.md](docs/EN/HARDWARE.md) | Choosing a USB Wi-Fi adapter (how to check spoofed-MAC support), verified-hardware table |
 | [docs/EN/SETUP.md](docs/EN/SETUP.md) | From `git clone` to meeting a real console |
 | [docs/EN/TROUBLESHOOTING.md](docs/EN/TROUBLESHOOTING.md) | Symptom-based diagnosis |

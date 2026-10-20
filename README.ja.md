@@ -59,6 +59,7 @@ pytest                      # ハードウェア不要のテスト一式
 | ファイル | 内容 |
 |---|---|
 | [docs/JA/STATUS.md](docs/JA/STATUS.md) | できること(再現方法つき) / まだできないこと / 未解決の課題 |
+| [docs/JA/REQUIREMENTS.md](docs/JA/REQUIREMENTS.md) | 用途別の必要なソフトウェア・ハードウェア(Pythonパッケージ、システムのツール、エミュレータ等) |
 | [docs/JA/HARDWARE.md](docs/JA/HARDWARE.md) | USB Wi-Fiアダプタの選び方(偽装MAC対応の確認方法)、動作確認表 |
 | [docs/JA/SETUP.md](docs/JA/SETUP.md) | clone直後から実機とすれちがうまでの手順 |
 | [docs/JA/TROUBLESHOOTING.md](docs/JA/TROUBLESHOOTING.md) | うまくいかないときの症状別の切り分け |

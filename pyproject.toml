@@ -13,6 +13,9 @@ dependencies = [
 dev = ["pytest>=8.0", "pyctr>=0.7"]
 # Mii QRコード画像の生成
 tools = ["qrcode[pil]>=8.0"]
+# 画像からアイコンを作る / Mii QR画像を読む(zbarはシステムのパッケージも必要)
+images = ["pillow>=10"]
+mii-qr = ["pillow>=10", "pyzbar>=0.1.9"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

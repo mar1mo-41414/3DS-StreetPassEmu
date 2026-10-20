@@ -19,11 +19,16 @@ If you have no genuine box to start from, `scripts/build_tmp_box.py` generates o
 
 ```bash
 python scripts/build_tmp_box.py --mii my_mii.bin --comment "Hello!" -o box.bin
+# or take the sender Mii from a picture of its Mii QR code (needs zbarimg or pyzbar):
+python scripts/build_tmp_box.py --mii-qr my_mii_qr.png --comment "Hello!" -o box.bin
 # optional: --smdh app.smdh | --title NAME | --large-icon img.png --small-icon img.png \
 #           --header-icon img.png | --country 1 --region 41 | --counter N
 ```
 
-`--mii` is a raw 96-byte FFLStoreData or a 112-byte encrypted Mii blob / Mii QR payload. The
+`--mii` is a raw 96-byte FFLStoreData or a 112-byte encrypted Mii blob / Mii QR payload; `--mii-qr`
+reads the QR code image the Mii Maker shows (the CCM tag and CRC16 are verified, so a damaged or non-Mii
+QR code is refused). A Mii from a real QR code has a genuine author_id / mii_id, which sidesteps the
+problem that randomly generated IDs are refused. The
 header, TLVs, body and HMAC trailer are generated; only the pieces Mii Plaza needs are filled in
 (see [PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md)); the rest stays zero. Images are scaled to
 the icon sizes (needs Pillow). The result can be checked without a console with

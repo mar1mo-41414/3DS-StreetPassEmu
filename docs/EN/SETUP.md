@@ -49,7 +49,8 @@ pytest   # confirm the whole suite (no hardware needed) passes
 ```
 
 Dependencies: `pycryptodome>=3.20` (required); `pytest>=8.0` and `pyctr>=0.7` (dev extras,
-used for tests that read NAND images, etc.).
+used for tests that read NAND images, etc.). The full list of software and hardware per task
+(Pillow, zbar, AzaharPlus, Xvfb, ...) is in [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 3. Setting up `tools/wifit3`
 
