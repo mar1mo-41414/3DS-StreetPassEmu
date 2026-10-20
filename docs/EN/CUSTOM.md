@@ -39,9 +39,10 @@ QR code, and `--new-ids` gives any Mii new IDs; either way Mii Plaza treats the 
 `--prefecture` (a Japanese name, an English name or the JIS number) fills in the country and region codes and names;
 without it the console shows "_" as the residence. `--hobby N` picks the "…is my hobby" line (0 = none; known: 1 illustration,
 8 movies, 9 internet, 10 games); `--pet N` (1 dog) and `--dream N` (1 "live long") add the "dog or cat?" and "my dream" lines.
-`--title` fills the box's title table (both short and long name); on a real console the name shown after "recently played" came from the
-title ID (`--app-title-id`, default System Settings) rather than the table, so a custom title may still show as "System Settings".
-To send the same Mii again and again as an "n-th meeting", run the loop with `--fresh-message-ids-each-cycle`. Missing icons become a grey stand-in (all-zero data would be a black square). **Boxes built this way were
+`--title` fills the box's title table (both short and long name) and is what the console shows after "recently played", with the
+box's own icon — unless `--app-title-id` is System Settings (the default), in which case the console shows its own name. Use another
+title ID to get a custom name. A given Mii only has one conversation per day: sending the same Mii again
+(`--fresh-message-ids-each-cycle` regenerates the message IDs) just raises today's encounter counter. Missing icons become a grey stand-in (all-zero data would be a black square). **Boxes built this way were
 accepted by Mii Plaza on real consoles (Linux and macOS hosts).**
 
 ## Options to use every time
