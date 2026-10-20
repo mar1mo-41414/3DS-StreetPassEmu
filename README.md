@@ -28,6 +28,8 @@ your real console, within radio range, through a USB Wi-Fi adapter.
   as "first meeting" or "n-th meeting"
 - Get a sender Mii from a Mii QR code image (made with the Mii Maker's "Send Miis"), or — optionally —
   extract the Miis stored on the console in bulk from a NAND backup
+- Do all of the above from a **GUI** with tabs (send/receive, Mii, box, identity, files, log) that
+  runs in your browser on Windows, macOS and Linux — [docs/EN/GUI.md](docs/EN/GUI.md)
 - Build a message from scratch (no genuine box as a template), and check whether Mii Plaza accepts
   a message by running it through the game in an emulator — no console needed (real-console
   confirmation of from-scratch boxes is still pending)
@@ -57,6 +59,7 @@ cd 3DS-StreetPassEmu
 python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -e ".[dev]"
 pytest                      # the test suite needs no hardware
+python scripts/gui.py       # optional: the GUI (any OS, opens in your browser)
 ```
 
 The full walk-through — preparing the Wi-Fi driver, extracting keys, receiving your first
@@ -67,6 +70,7 @@ message, then rewriting and sending — is in **[docs/EN/SETUP.md](docs/EN/SETUP
 | File | Contents |
 |---|---|
 | [docs/EN/STATUS.md](docs/EN/STATUS.md) | What works (with reproduction steps) / what does not yet / open problems |
+| [docs/EN/GUI.md](docs/EN/GUI.md) | The browser-based GUI (`scripts/gui.py`): tabs, workspace, what the send/receive tab needs |
 | [docs/EN/REQUIREMENTS.md](docs/EN/REQUIREMENTS.md) | Required software and hardware, per task (Python packages, system tools, emulator, ...) |
 | [docs/EN/HARDWARE.md](docs/EN/HARDWARE.md) | Choosing a USB Wi-Fi adapter (how to check spoofed-MAC support), verified-hardware table |
 | [docs/EN/SETUP.md](docs/EN/SETUP.md) | From `git clone` to meeting a real console |

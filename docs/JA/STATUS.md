@@ -36,6 +36,7 @@
 | 8 | Mii Plaza以外のゲーム(とびだせ どうぶつの森)のStreetPassメッセージ本文の構造を、静的解析で読み解く(**実機での検証はまだ**) | [GAME_FORMATS.md](GAME_FORMATS.md) |
 | 9 | **TMP Boxをゼロから生成する**(実機から受信したBoxを雛形にしない): ヘッダ・TLV・本文・HMACを組み立てる。アイコン画像/SMDHの取り込み付き(**実機での検証はまだ、エミュレータでは受理を確認**) | [CUSTOM.md](CUSTOM.md) → `scripts/build_tmp_box.py` |
 | 10 | 実機なしで、BoxをエミュレータのMii Plazaに通して**受理されるか**を確認する。Boxの各領域が受理に必要かの切り分けにも使える | [EMULATOR_TEST.md](EMULATOR_TEST.md) → `scripts/emu_receiver_test.py` / `emu_bisect_box.py` |
+| 11 | 編集・生成の全てを、どのOSでもブラウザの**GUI**(送受信・Mii・Box編集・識別情報・ファイル・ログのタブ)から行う。送受信ループの開始/停止もここから | [GUI.md](GUI.md) → `python scripts/gui.py`(編集系は動作確認済み。開始/停止は開発者の環境でのみ確認) |
 
 ### 受理される送信データの条件(Mii Plaza)
 

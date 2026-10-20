@@ -53,6 +53,9 @@ Dependencies: `pycryptodome>=3.20` (required); `pytest>=8.0` and `pyctr>=0.7` (d
 used for tests that read NAND images, etc.). The full list of software and hardware per task
 (Pillow, zbar, AzaharPlus, Xvfb, ...) is in [REQUIREMENTS.md](REQUIREMENTS.md).
 
+> Prefer clicking? `python scripts/gui.py` ([GUI.md](GUI.md)) does the editing, the Mii QR import and the
+> start/stop of the loop in a browser; the Wi-Fi driver and key steps below still apply for sending.
+
 ## 3. Setting up `tools/wifit3`
 
 It is git-ignored (not committed to this repository), so clone it separately:

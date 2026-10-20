@@ -16,3 +16,6 @@ homebrew/**/*.3dsx
 homebrew/**/*.elf
 homebrew/**/*.smdh
 homebrew/**/build/
+
+# GUI workspace (boxes, Miis, received messages, settings)
+workspace/

@@ -18,6 +18,10 @@ python -m pip install -e ".[dev]"      # テスト用にpytestとpyctr。ハー�
 
 ## 用途別
 
+### GUI([GUI.md](GUI.md))
+- 常に必要なパッケージとWebブラウザだけ。`python scripts/gui.py`で起動。
+- 送受信タブには「実機とすれちがう」の項目が全部必要。編集系のタブは何も追加で要らない。
+
 ### 実機とすれちがう(Boxの受信・送信)
 - 偽装MACにACKを返せるUSB Wi-Fiアダプタ — [HARDWARE.md](HARDWARE.md)。必須
 - CFW入りの3DSと**GodMode9**。自分の実機から`aes_keys.txt`を取り出すため(他のMiiを抽出する場合
@@ -31,8 +35,9 @@ python -m pip install -e ".[dev]"      # テスト用にpytestとpyctr。ハー�
   `--small-icon`、`--header-icon`)
 - **Mii QRコード画像からMiiを作る**(`build_tmp_box.py --mii-qr`)には、生のバイト列を返せる
   QRデコーダが必要: `zbarimg`コマンド*(システム: Debian/Ubuntuは`zbar-tools`、macOSは
-  `brew install zbar`)*、または`pyzbar`(`pip install -e ".[mii-qr]"`。こちらもzbarライブラリ
-  *(システム)*が必要)
+  `brew install zbar`)*、`pyzbar`(`pip install -e ".[mii-qr]"`。こちらもzbarライブラリ
+  *(システム)*が必要)、または**OpenCV**(`pip install -e ".[mii-qr-opencv]"`。システムのライブラリ不要で、
+  どのOSでも動く)
 - `qrcode[pil]`(`pip install -e ".[tools]"`)は、Mii QR画像を**生成する**ときだけ(テスト・実験用)
 
 ### エミュレータでBoxを確認する([EMULATOR_TEST.md](EMULATOR_TEST.md))

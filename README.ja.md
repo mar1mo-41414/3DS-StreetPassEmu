@@ -24,6 +24,8 @@ USB Wi-Fiアダプタ越しに、電波の届く範囲の自分の実機と直�
   識別情報を丸ごと)。実機のMii広場に「初めまして」/「n回目」として表示される
 - Mii QRコードの画像(Mii作成の「Miiを送る」で作れる)から送信者Miiを作る。任意で、実機の
   NANDバックアップから本体内のMiiをまとめて取り出すこともできる
+- 上記をブラウザで動く**GUI**(送受信・Mii・Box編集・識別情報・ファイル・ログのタブ)から行う
+  (Windows/macOS/Linux共通) — [docs/JA/GUI.md](docs/JA/GUI.md)
 - メッセージを雛形なしでゼロから生成する。また、エミュレータ上のMii PlazaにBoxを通して、受理されるか
   を実機なしで確認する(ゼロから作ったBoxの実機での確認は未実施)
 - Mii Plaza以外のゲーム(とびだせ どうぶつの森)のメッセージ形式の解析結果
@@ -52,6 +54,7 @@ cd 3DS-StreetPassEmu
 python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -e ".[dev]"
 pytest                      # ハードウェア不要のテスト一式
+python scripts/gui.py       # 任意: GUI(どのOSでも、ブラウザで開く)
 ```
 
 実機とすれちがうまでの手順(Wi-Fiドライバの用意、鍵の取り出し、最初のメッセージ受信、
@@ -62,6 +65,7 @@ pytest                      # ハードウェア不要のテスト一式
 | ファイル | 内容 |
 |---|---|
 | [docs/JA/STATUS.md](docs/JA/STATUS.md) | できること(再現方法つき) / まだできないこと / 未解決の課題 |
+| [docs/JA/GUI.md](docs/JA/GUI.md) | ブラウザで使うGUI(`scripts/gui.py`): タブの説明、workspace、送受信タブに必要なもの |
 | [docs/JA/REQUIREMENTS.md](docs/JA/REQUIREMENTS.md) | 用途別の必要なソフトウェア・ハードウェア(Pythonパッケージ、システムのツール、エミュレータ等) |
 | [docs/JA/HARDWARE.md](docs/JA/HARDWARE.md) | USB Wi-Fiアダプタの選び方(偽装MAC対応の確認方法)、動作確認表 |
 | [docs/JA/SETUP.md](docs/JA/SETUP.md) | clone直後から実機とすれちがうまでの手順 |

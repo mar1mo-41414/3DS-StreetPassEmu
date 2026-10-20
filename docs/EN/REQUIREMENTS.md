@@ -18,6 +18,10 @@ python -m pip install -e ".[dev]"      # pytest and pyctr for the tests; no hard
 
 ## By task
 
+### The GUI ([GUI.md](GUI.md))
+- Nothing beyond the always-needed packages, and a web browser. `python scripts/gui.py`.
+- Its Send / Receive tab needs everything under "Meeting a real console"; the editing tabs need nothing more.
+
 ### Meeting a real console (receive / send boxes)
 - A USB Wi-Fi adapter that can ACK a spoofed MAC — [HARDWARE.md](HARDWARE.md). Mandatory.
 - A 3DS with custom firmware and **GodMode9**, to dump `aes_keys.txt` (and, only for extracting other
@@ -32,7 +36,7 @@ python -m pip install -e ".[dev]"      # pytest and pyctr for the tests; no hard
   `--small-icon`, `--header-icon`).
 - A **Mii from a QR code image** (`build_tmp_box.py --mii-qr`) needs a QR decoder that returns raw
   bytes: either the `zbarimg` command *(system: `zbar-tools` on Debian/Ubuntu, `brew install zbar` on
-  macOS)* or `pyzbar` (`pip install -e ".[mii-qr]"`, which also needs the zbar library *(system)*).
+  macOS)* `pyzbar` (`pip install -e ".[mii-qr]"`, which also needs the zbar library *(system)*), or **OpenCV** (`pip install -e ".[mii-qr-opencv]"`, no system library, works on every OS).
 - `qrcode[pil]` (`pip install -e ".[tools]"`) only to *generate* Mii QR images (tests, experiments).
 
 ### Checking a box in the emulator ([EMULATOR_TEST.md](EMULATOR_TEST.md))

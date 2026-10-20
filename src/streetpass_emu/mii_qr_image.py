@@ -4,9 +4,9 @@ A 3DS Mii QR code carries 112 raw bytes (nonce 8 + AES-CCM ciphertext 88 + tag 1
 This module reads the bytes out of an image with an external QR decoder and decrypts them, so a
 sender Mii for a TMP Box can be made from nothing but the QR image the Mii Maker displays.
 
-Decoder: ``pyzbar`` if installed, otherwise the ``zbarimg`` command line tool (package ``zbar-tools``
-on Debian/Ubuntu, ``zbar`` in Homebrew). The payload is binary, so a decoder that only returns text
-is not enough.
+Decoder, first one found: ``pyzbar``, ``opencv-python`` (4.8+, ``detectAndDecodeBytes``), or the
+``zbarimg`` command line tool (package ``zbar-tools`` on Debian/Ubuntu, ``zbar`` in Homebrew). The payload
+is binary, so a decoder that only returns text is not enough.
 """
 from __future__ import annotations
 
@@ -31,9 +31,27 @@ def read_qr_bytes(path: Path) -> bytes:
             return bytes(codes[0].data)
     except ImportError:
         pass
+    try:  # OpenCV: pip install opencv-python-headless (works on every OS without a system library)
+        import cv2
+        det = cv2.QRCodeDetector()
+        img = cv2.imread(str(path))
+        if img is not None and hasattr(det, "detectAndDecodeBytes"):
+            data, _pts, _ = det.detectAndDecodeBytes(img)
+            if data:
+                data = bytes(data)
+                try:  # OpenCV hands back binary QR data as UTF-8 of the Latin-1 text; undo that
+                    fixed = data.decode("utf-8").encode("latin-1")
+                    if len(fixed) == QR_CODE_RAW_SIZE:
+                        return fixed
+                except (UnicodeError, ValueError):
+                    pass
+                return data
+    except ImportError:
+        pass
     exe = shutil.which("zbarimg")
     if not exe:
-        raise MiiQrError("no QR decoder found: install zbar-tools (zbarimg) or `pip install pyzbar`")
+        raise MiiQrError("no QR decoder found: `pip install pyzbar` or `pip install opencv-python-headless` "
+                         "(or install zbar-tools for zbarimg)")
     # -Sbinary: return the bytes untouched; --raw: no "QR-Code:" prefix; -1: stop after one code
     p = subprocess.run([exe, "--quiet", "--raw", "-Sbinary", "-1", str(path)], capture_output=True)
     if p.returncode != 0 or not p.stdout:

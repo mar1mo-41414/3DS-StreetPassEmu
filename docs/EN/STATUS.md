@@ -36,6 +36,7 @@ console, within radio range, through a USB Wi-Fi adapter.
 | 8 | Decode the structure of the StreetPass message body of a game other than Mii Plaza (Animal Crossing: New Leaf) by static analysis (**not yet verified on a real console**) | [GAME_FORMATS.md](GAME_FORMATS.md) |
 | 9 | **Generate a TMP Box from scratch** (no genuine box as a template): builds the header, TLVs, body and HMAC, with icon-image / SMDH import (**not yet verified on a real console; accepted in the emulator**) | [CUSTOM.md](CUSTOM.md) → `scripts/build_tmp_box.py` |
 | 10 | Run a box through Mii Plaza in an emulator to see whether it is **accepted**, with no console. Also tells which regions of the box acceptance depends on | [EMULATOR_TEST.md](EMULATOR_TEST.md) → `scripts/emu_receiver_test.py` / `emu_bisect_box.py` |
+| 11 | Do all of the editing and building from a browser **GUI** (tabs: send/receive, Mii, box, identity, files, log) on any OS; start/stop the send/receive loop from it | [GUI.md](GUI.md) → `python scripts/gui.py` (editing tabs tested; start/stop only verified on the maintainer's setup) |
 
 ### Conditions for outgoing data to be accepted (Mii Plaza)
 

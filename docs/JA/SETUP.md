@@ -53,6 +53,9 @@ pytest   # 全テスト(ハードウェア不要)が通ることを確認
 NANDイメージの読み込みテスト等に使用)。用途別の必要なソフトウェア・ハードウェア
 (Pillow、zbar、AzaharPlus、Xvfb等)の一覧は[REQUIREMENTS.md](REQUIREMENTS.md)にあります。
 
+> 画面で操作したい場合は `python scripts/gui.py`([GUI.md](GUI.md))で、編集・MiiのQR取り込み・ループの
+> 開始/停止をブラウザから行えます。送信にはこの先のWi-Fiドライバと鍵の準備が引き続き必要です。
+
 ## 3. `tools/wifit3` のセットアップ
 
 `.gitignore`対象(このリポジトリにはコミットしない)なので、別途clone:

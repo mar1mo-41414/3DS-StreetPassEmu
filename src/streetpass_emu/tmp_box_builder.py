@@ -75,6 +75,25 @@ DEFAULT_APP_TITLE_ID = 0x0004001000020000
 DEFAULT_APP_TITLE_VERSION = 0x3001
 
 
+# CecMessageHeader fields (name, offset, length), see docs/EN/PROTOCOL_REFERENCE.md. ``BoxSpec.header_fields``
+# can override any of them by offset.
+HEADER_FIELDS = [
+    ("titleId2", 0x14, 4), ("batchId", 0x18, 4), ("unknown1", 0x1C, 4), ("messageId", 0x20, 8),
+    ("messageVersion", 0x28, 4), ("messageId2", 0x2C, 8), ("flags", 0x34, 1), ("sendMethod", 0x35, 1),
+    ("unopened", 0x36, 1), ("newFlag", 0x37, 1), ("senderId", 0x38, 8), ("senderId2", 0x40, 8),
+    ("sendTime", 0x48, 12), ("recvTime", 0x54, 12), ("created", 0x60, 12), ("sendCount", 0x6C, 1),
+    ("forwardCount", 0x6D, 1), ("userData", 0x6E, 2),
+]
+
+# body ranges the builder fills from BoxSpec fields; anything non-zero outside them in a parsed box
+# is kept verbatim in ``extra_body`` so that a loaded box can be rebuilt byte for byte.
+MODELLED_BODY_RANGES = [
+    (0x0000, 0x0018), (OFF_TITLE_TABLE, OFF_TITLE_TABLE + TITLE_TABLE_SIZE),
+    (OFF_SMALL_ICON, OFF_LARGE_ICON + 4608), (OFF_MII_DB_PREFACE, OFF_MII + 112),
+    (OFF_RESIDENCE, OFF_COMMENT + (COMMENT_MAX_CHARS + 1) * 2), (OFF_MII_ID_COPY, OFF_MII_ID_COPY + 10),
+]
+
+
 @dataclass
 class BoxSpec:
     """Everything that varies between boxes. Only ``mii`` is mandatory."""
@@ -92,11 +111,13 @@ class BoxSpec:
     region: int = 0
     country_names: Optional[list[str]] = None      # 16 languages
     region_names: Optional[list[str]] = None       # 16 languages
+    mii_id_copy: Optional[bytes] = None            # 10 B at 0x4484; default: the Mii's own mii_id
     visit_counter: int = 1                         # u32 at 0x3F60 (monotonic on a real console)
     comment_header_tail: bytes = bytes(12)         # 0x3F64..0x3F70, meaning unknown
     message_id: Optional[bytes] = None             # 8 bytes, random by default
     created: Optional[datetime.datetime] = None    # default: now
-    extra_body: dict[int, bytes] = field(default_factory=dict)  # offset -> bytes, for experiments
+    extra_body: dict[int, bytes] = field(default_factory=dict)  # body offset -> bytes (unmodelled areas)
+    header_fields: dict[int, bytes] = field(default_factory=dict)  # header offset -> bytes (overrides)
 
 
 def _timestamp(dt: datetime.datetime) -> bytes:
@@ -149,7 +170,8 @@ def build_body(spec: BoxSpec) -> bytes:
     put(OFF_MII_DB_HEADER, b"CFPB" + struct.pack("<5I", 1, 0, 0, 0, 1))
     put(OFF_MII, encode_mii_blob(spec.mii))
 
-    put(OFF_MII_ID_COPY, spec.mii[MII_ID_OFFSET:MII_ID_OFFSET + 10])  # genuine boxes repeat the mii_id here
+    put(OFF_MII_ID_COPY, spec.mii_id_copy if spec.mii_id_copy is not None
+        else spec.mii[MII_ID_OFFSET:MII_ID_OFFSET + 10])  # genuine boxes repeat the mii_id here
     body[OFF_RESIDENCE + 2] = spec.region
     body[OFF_RESIDENCE + 3] = spec.country
     put(OFF_COUNTRY_NAMES, _name_table(spec.country_names))
@@ -194,6 +216,10 @@ def build_message(spec: BoxSpec) -> bytes:
     head[0x60:0x6C] = created
     head[0x6C] = DEFAULT_SEND_COUNT
     head[0x6D] = DEFAULT_FORWARD_COUNT
+    for off, data in spec.header_fields.items():
+        if not 0x14 <= off < HEADER_FIXED or off + len(data) > HEADER_FIXED:
+            raise ValueError(f"header field at {off:#x}+{len(data)} is outside the fixed header")
+        head[off:off + len(data)] = data
 
     trailer = hmac.new(MII_PLAZA_HMAC_KEY, body, hashlib.sha256).digest()
     return bytes(head) + tlv + body + trailer
@@ -235,7 +261,24 @@ def spec_from_message(msg: bytes) -> BoxSpec:
     title_id, title_ver = struct.unpack_from("<QH", b, OFF_TITLE_ID)
     ts = struct.unpack_from("<IBBBBBBH", msg, 0x60)
     created = datetime.datetime(ts[0], ts[1], ts[2], ts[4], ts[5], ts[6], ts[7] * 1000)
+    unmodelled = {}
+    mask = bytearray(len(b))
+    for a, z in MODELLED_BODY_RANGES:
+        mask[a:z] = b"\x01" * (z - a)
+    i = 0
+    while i < len(b):
+        if mask[i] or not b[i]:
+            i += 1
+            continue
+        j = i
+        while j < len(b) and not mask[j] and (b[j] or any(b[j:j + 16])):
+            j += 1
+        j = min(j, len(b))
+        unmodelled[i] = bytes(b[i:j].rstrip(b"\x00")) or bytes(b[i:j])
+        i = j
     return BoxSpec(
+        header_fields={off: bytes(msg[off:off + n]) for _name, off, n in HEADER_FIELDS},
+        extra_body=unmodelled,
         mii=decode_mii_blob(b[OFF_MII:OFF_MII + 112]),
         comment=b[OFF_COMMENT:OFF_COMMENT + (COMMENT_MAX_CHARS + 1) * 2].decode("utf-16le").split("\x00")[0],
         notice=tlvs[4].decode("utf-16le").rstrip("\x00"),
@@ -247,6 +290,7 @@ def spec_from_message(msg: bytes) -> BoxSpec:
         country=b[OFF_RESIDENCE + 3], region=b[OFF_RESIDENCE + 2],
         country_names=_read_names(b[OFF_COUNTRY_NAMES:OFF_COUNTRY_NAMES + NAME_ENTRY * TITLE_COUNT]),
         region_names=_read_names(b[OFF_REGION_NAMES:OFF_REGION_NAMES + NAME_ENTRY * TITLE_COUNT]),
+        mii_id_copy=bytes(b[OFF_MII_ID_COPY:OFF_MII_ID_COPY + 10]),
         visit_counter=struct.unpack_from("<I", b, OFF_COMMENT_HEADER)[0],
         comment_header_tail=bytes(b[OFF_COMMENT_HEADER + 4:OFF_COMMENT_HEADER + 16]),
         message_id=bytes(msg[0x20:0x28]),
