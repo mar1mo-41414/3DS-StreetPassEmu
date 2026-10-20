@@ -23,6 +23,7 @@ LOG_LINES = 4000
 SETTINGS_FILE = "settings.json"
 DEFAULT_SETTINGS = {
     "wifit3_dir": "tools/wifit3",
+    "uv_python": "",
     "keyslot_file": "",
     "friend_code": "",
     "channel": 1,
@@ -107,6 +108,12 @@ class Runner:
         p = Path(self.settings["wifit3_dir"]).expanduser()
         return p if p.is_absolute() else (self.repo / p)
 
+    def _uv_run(self) -> list[str]:
+        """``uv run [--python X] --with pycryptodome`` (macOS needs --python 3.12: libusb-package has no
+        wheel for the newest Python)."""
+        py = str(self.settings.get("uv_python", "")).strip()
+        return ["uv", "run"] + (["--python", py] if py else []) + ["--with", "pycryptodome"]
+
     def _env(self) -> dict:
         env = dict(os.environ)
         if self.settings["keyslot_file"]:
@@ -140,7 +147,7 @@ class Runner:
             raise RunnerError("no_uv")
         if not (w / "pyproject.toml").exists():
             raise RunnerError("no_wifit3")
-        p = subprocess.run(["uv", "run", "python", "-c",
+        p = subprocess.run(self._uv_run() + ["python", "-c",
                             "from wifit3.device.manager import wlan_ifaces; print(wlan_ifaces())"],
                            cwd=w, capture_output=True, text=True, timeout=180)
         return (p.stdout + p.stderr).strip()
@@ -152,8 +159,7 @@ class Runner:
             raise RunnerError("no_uv")
         if not (w / "pyproject.toml").exists():
             raise RunnerError("no_wifit3")
-        p = subprocess.run(["uv", "run", "--with", "pycryptodome", "python", str(self.repo / "scripts" / "streetpass_loop.py"),
-                            "--help"],
+        p = subprocess.run(self._uv_run() + ["python", str(self.repo / "scripts" / "streetpass_loop.py"), "--help"],
                            cwd=w, capture_output=True, text=True, timeout=180)
         return (p.stdout + p.stderr).strip()
 
@@ -175,7 +181,7 @@ class Runner:
             raise RunnerError("no_keyslot_file")
         box = self.workspace / "outbound.bin"
         box.write_bytes(box_bytes)
-        cmd = ["uv", "run", "--with", "pycryptodome", "python", str(self.repo / "scripts" / "streetpass_loop.py"),
+        cmd = self._uv_run() + ["python", str(self.repo / "scripts" / "streetpass_loop.py"),
                "--channel", str(int(s["channel"])), "--cycle-seconds", str(float(s["cycle_seconds"])),
                "--cycles", str(int(s["cycles"])), "--out-dir", str(self.workspace / "received"),
                "--outbound-tmp-box-body-template", str(box)]

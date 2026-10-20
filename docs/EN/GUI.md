@@ -49,6 +49,9 @@ sender Mii (experimental), and regenerating the IDs every cycle. **Other options
 text is passed to `scripts/streetpass_loop.py` unchanged, for options the switches do not cover (for example
 `--outbound-title-id 0x00020800`); "Show the available options" prints the full list. Normally leave it empty.
 
+The **uv Python** setting adds `--python X` to the `uv run` commands; on macOS set it to `3.12` (the newest
+Python has no `libusb-package` wheel yet).
+
 "Check setup" tells you which of these is missing; "Check adapters" asks wifit3 which supported adapters
 it can see. The editing tabs work without any of this.
 

@@ -222,7 +222,7 @@ def test_start_builds_the_command_and_friend_code_file(gui, monkeypatch, tmp_pat
     keyfile.write_text("{}")
     d = _valid_friend_code()
     call("/api/settings", {"wifit3_dir": str(wifit3), "keyslot_file": str(keyfile), "friend_code": d,
-                           "channel": 6, "cycle_seconds": 30, "verbose": True, "probe_interval": "5",
+                           "channel": 6, "cycle_seconds": 30, "uv_python": "3.12", "verbose": True, "probe_interval": "5",
                            "match_identity": True, "extra_args": "--outbound-title-id 0x00020800"})
     seen = {}
 
@@ -244,7 +244,7 @@ def test_start_builds_the_command_and_friend_code_file(gui, monkeypatch, tmp_pat
     monkeypatch.setattr(runner_mod.subprocess, "Popen", fake_popen)
     assert call("/api/run/start", {})[0] == 200
     cmd = seen["cmd"]
-    assert cmd[:5] == ["uv", "run", "--with", "pycryptodome", "python"] and seen["cwd"] == wifit3
+    assert cmd[:7] == ["uv", "run", "--python", "3.12", "--with", "pycryptodome", "python"] and seen["cwd"] == wifit3
     for flag in ("--verbose", "--match-identity-to-mii", "--probe-interval-seconds", "--outbound-title-id"):
         assert flag in cmd
     assert cmd[cmd.index("--channel") + 1] == "6" and "--fresh-each-cycle" not in cmd

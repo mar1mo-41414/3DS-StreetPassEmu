@@ -80,6 +80,7 @@ details summary{cursor:pointer;color:var(--acc2);margin-bottom:8px}
     <h2 data-i="settings"></h2>
     <div class="row">
       <label class="wide"><span data-i="s_wifit3"></span><input type="text" id="s_wifit3_dir" class="mono"></label>
+      <label class="sm"><span data-i="s_uvpy"></span><input type="text" id="s_uv_python" placeholder="3.12"></label>
       <label class="sm"><span data-i="s_channel"></span><input type="number" id="s_channel" min="1" max="13"></label>
       <label class="sm"><span data-i="s_cycle"></span><input type="number" id="s_cycle_seconds" min="10"></label>
       <label class="sm"><span data-i="s_cycles"></span><input type="number" id="s_cycles" min="0"></label>
@@ -267,7 +268,7 @@ tab_run:"送受信",tab_mii:"Mii",tab_box:"Box編集",tab_id:"識別情報",tab_
 run_title:"すれちがいの送受信",cur_mii:"送信するMii",cur_box:"送信するBox",state:"状態",
 start:"開始",stop:"停止",adapters:"アダプタを確認",doctor:"準備状況を確認",
 run_note:"実機の3DSをスリープにして近くに置き、開始します。受信したBoxは下の一覧と workspace/received に保存されます。",
-settings:"設定",s_wifit3:"wifit3 のフォルダ",s_channel:"チャンネル",s_cycle:"1回の待ち受け(秒)",s_cycles:"回数(0=無限)",
+settings:"設定",s_wifit3:"wifit3 のフォルダ",s_uvpy:"uvのPython(macOSは3.12)",s_channel:"チャンネル",s_cycle:"1回の待ち受け(秒)",s_cycles:"回数(0=無限)",
 s_keyslot:"キースロット0x2Eの鍵ファイル(JSON)",s_friend:"フレンドコード(任意)",s_friend_note:"本体のフレンドリストの画面に出る12桁をそのまま入力できます(ハイフンは有無どちらでも)。空なら「フレンドではない」と答えます。チェックサムが合わない入力は保存できません。",
 import_keys:"aes_keys.txt から鍵ファイルを作る",import_keys_note:"GodMode9で取った aes_keys.txt を選ぶと、必要な2行だけを取り出して workspace に保存します。鍵の値は画面に表示しません。",
 adv:"詳細設定(通常は変えなくて大丈夫)",s_fresh:"サイクルごとにメッセージIDとMiiのmii_idを作り直す(送信Miiの識別情報が毎回変わります)",s_verbose:"全フレームの詳細ログを出す(ログが非常に長くなります)",s_sleep:"サイクル間の待ち(秒)",s_backoff:"起動失敗時の再試行待ち(秒)",s_retries:"起動の再試行回数",s_probe:"自分からも探す間隔(秒)",s_adv_note:"「自分からも探す間隔」は、受信待ちだけでなく実機と同じように自分からも定期的に呼びかけます(空=しない、実験的)。起動の再試行は、USBアダプタが使用中などで立ち上がらないときの待ちと回数です。",s_match_id:"Wi-Fi層の識別情報を送信Miiに合わせる(実験的)",s_match_con:"さらに接続層のIDも送信Miiから導出する(上と併用・実験的)",s_extra:"その他のオプション(コマンドライン形式)",s_help:"使えるオプション一覧を表示",s_extra_note:"上のスイッチに無いオプションを、streetpass_loop.py にそのまま渡せます。例: --outbound-title-id 0x00020800。一覧は右のボタンで表示できます(uvとwifit3が必要)。普通は空で構いません。",save_settings:"設定を保存",
@@ -307,7 +308,7 @@ tab_run:"Send / Receive",tab_mii:"Mii",tab_box:"Box",tab_id:"Identity",tab_file:
 run_title:"StreetPass send / receive",cur_mii:"Sender Mii",cur_box:"Box to send",state:"State",
 start:"Start",stop:"Stop",adapters:"Check adapters",doctor:"Check setup",
 run_note:"Put your 3DS to sleep next to the PC and press Start. Received boxes appear below and in workspace/received.",
-settings:"Settings",s_wifit3:"wifit3 folder",s_channel:"Channel",s_cycle:"Listen per cycle (s)",s_cycles:"Cycles (0 = forever)",
+settings:"Settings",s_wifit3:"wifit3 folder",s_uvpy:"uv Python (3.12 on macOS)",s_channel:"Channel",s_cycle:"Listen per cycle (s)",s_cycles:"Cycles (0 = forever)",
 s_keyslot:"Keyslot 0x2E key file (JSON)",s_friend:"Friend code (optional)",s_friend_note:"Type the 12 digits shown on the console's friend list screen as they are (with or without dashes). Left empty, the answer is \"not a friend\". Input whose checksum is wrong cannot be saved.",
 import_keys:"Create the key file from aes_keys.txt",import_keys_note:"Pick the aes_keys.txt dumped with GodMode9; only the two needed lines are extracted into the workspace. Key values are never shown.",
 adv:"Advanced settings (normally leave as is)",s_fresh:"Regenerate message IDs and the Mii's mii_id every cycle (the sender's identity changes each time)",s_verbose:"Log every frame (the log gets very long)",s_sleep:"Pause between cycles (s)",s_backoff:"Retry wait on start-up failure (s)",s_retries:"Start-up retries",s_probe:"Also search actively every (s)",s_adv_note:"\"Also search actively\" makes the PC call out periodically like a real console instead of only listening (empty = off, experimental). The retry settings apply when the USB adapter cannot be brought up, e.g. because it is in use.",s_match_id:"Match the Wi-Fi layer identity to the sender Mii (experimental)",s_match_con:"Also derive the connection-layer IDs from the sender Mii (needs the one above, experimental)",s_extra:"Other options (command-line form)",s_help:"Show the available options",s_extra_note:"Passed to streetpass_loop.py as they are, for options the switches above do not cover, e.g. --outbound-title-id 0x00020800. The button on the right lists them (needs uv and wifit3). Usually leave this empty.",save_settings:"Save settings",
@@ -379,7 +380,7 @@ function render(){
   $("runState").innerHTML=S.running?`<span class="ok">${t("running")}</span>`:t("idle");
   $("btnStart").disabled=S.running||!S.verify.built;$("btnStop").disabled=!S.running;
   const st=S.settings;
-  setVal("s_wifit3_dir",st.wifit3_dir);setVal("s_keyslot_file",st.keyslot_file);setVal("s_friend_code",st.friend_code);setVal("s_sleep_between_cycles",st.sleep_between_cycles);setVal("s_retry_backoff",st.retry_backoff);setVal("s_max_retries",st.max_retries);setVal("s_probe_interval",st.probe_interval);
+  setVal("s_wifit3_dir",st.wifit3_dir);setVal("s_uv_python",st.uv_python);setVal("s_keyslot_file",st.keyslot_file);setVal("s_friend_code",st.friend_code);setVal("s_sleep_between_cycles",st.sleep_between_cycles);setVal("s_retry_backoff",st.retry_backoff);setVal("s_max_retries",st.max_retries);setVal("s_probe_interval",st.probe_interval);
   setVal("s_channel",st.channel);setVal("s_cycle_seconds",st.cycle_seconds);setVal("s_cycles",st.cycles);setVal("s_extra_args",st.extra_args);
   ["fresh_each_cycle","verbose","match_identity","match_console_id"].forEach(k=>{const e=$("s_"+k);if(document.activeElement!==e)e.checked=!!st[k]});
   const boxes=S.received;
@@ -427,7 +428,7 @@ function bindField(id,key,num){const e=$(id);e.addEventListener("input",()=>{cle
   try{S=await api("/api/fields",{[key]:num?e.value:e.value});S.__keep=1;renderKeep(id)}catch(x){}},350)})}
 function renderKeep(id){const ae=document.activeElement;render();if(ae&&ae.id===id)ae.focus()}
 [["f_comment","comment"],["f_notice","notice"],["f_app_name","app_name"],["f_app_long","app_long"],["f_app_publisher","app_publisher"],["f_app_title_id","app_title_id"],["f_app_title_version","app_title_version"],["f_counter","counter"],["f_country","country"],["f_region","region"],["f_country_ja","country_ja"],["f_country_en","country_en"],["f_region_ja","region_ja"],["f_region_en","region_en"]].forEach(([i,k])=>bindField(i,k));
-$("btnSaveSettings").onclick=async()=>{await act("/api/settings",{wifit3_dir:$("s_wifit3_dir").value,keyslot_file:$("s_keyslot_file").value,friend_code:$("s_friend_code").value,channel:+$("s_channel").value,cycle_seconds:+$("s_cycle_seconds").value,cycles:+$("s_cycles").value,fresh_each_cycle:$("s_fresh_each_cycle").checked,verbose:$("s_verbose").checked,sleep_between_cycles:+$("s_sleep_between_cycles").value,retry_backoff:+$("s_retry_backoff").value,max_retries:+$("s_max_retries").value,probe_interval:$("s_probe_interval").value,match_identity:$("s_match_identity").checked,match_console_id:$("s_match_console_id").checked,extra_args:$("s_extra_args").value},"saved")};
+$("btnSaveSettings").onclick=async()=>{await act("/api/settings",{wifit3_dir:$("s_wifit3_dir").value,uv_python:$("s_uv_python").value,keyslot_file:$("s_keyslot_file").value,friend_code:$("s_friend_code").value,channel:+$("s_channel").value,cycle_seconds:+$("s_cycle_seconds").value,cycles:+$("s_cycles").value,fresh_each_cycle:$("s_fresh_each_cycle").checked,verbose:$("s_verbose").checked,sleep_between_cycles:+$("s_sleep_between_cycles").value,retry_backoff:+$("s_retry_backoff").value,max_retries:+$("s_max_retries").value,probe_interval:$("s_probe_interval").value,match_identity:$("s_match_identity").checked,match_console_id:$("s_match_console_id").checked,extra_args:$("s_extra_args").value},"saved")};
 $("btnStart").onclick=async()=>{await $("btnSaveSettings").onclick();await act("/api/run/start",{})};
 $("btnStop").onclick=()=>act("/api/run/stop",{});
 $("btnAdapters").onclick=async()=>{try{const r=await api("/api/run/adapters",{});$("doctorOut").textContent=r.text||"(no output)"}catch(e){}};

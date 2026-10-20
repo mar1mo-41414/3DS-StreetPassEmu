@@ -113,6 +113,10 @@ class TmpBox:
     アクセス/書き換えを提供する薄いラッパー。"""
 
     def __init__(self, data: bytes, profile: GameProfile = DEFAULT_PROFILE):
+        # a Box saved from the wire (streetpass_loop / live_streetpass_test) starts with the 0x14-byte
+        # TmpBoxHeader (magic 0x6161); the message proper (magic 0x6060) follows. Edit that.
+        if len(data) > 0x14 and struct.unpack_from("<H", data, 0)[0] == 0x6161:
+            data = data[0x14:]
         self.data = bytearray(data)
         self.profile = profile
         magic, _pad, self.message_size, self.total_header_size, self.body_size = \
