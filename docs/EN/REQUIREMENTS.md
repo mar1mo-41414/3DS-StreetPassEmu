@@ -32,8 +32,9 @@ python -m pip install -e ".[dev]"      # pytest and pyctr for the tests; no hard
 ### Editing or building a box
 - Nothing beyond the always-needed packages for `mii_plaza_editor.py` and for building a box from a
   96-byte Mii file.
-- **Pillow** (`pip install -e ".[images]"`) to turn PNG/JPEG files into icons (`--large-icon`,
-  `--small-icon`, `--header-icon`).
+- **Pillow** (a normal dependency now, installed automatically) turns PNG/JPEG files into icons (`--large-icon`,
+  `--small-icon`, `--header-icon`). With `uv`, run the scripts as `uv run python scripts/...` from the repository root and
+  everything needed is installed for you.
 - A **Mii from a QR code image** (`build_tmp_box.py --mii-qr`) needs a QR decoder that returns raw
   bytes: either the `zbarimg` command *(system: `zbar-tools` on Debian/Ubuntu, `brew install zbar` on
   macOS)* `pyzbar` (`pip install -e ".[mii-qr]"`, which also needs the zbar library *(system)*), or **OpenCV** (`pip install -e ".[mii-qr-opencv]"`, no system library, works on every OS).

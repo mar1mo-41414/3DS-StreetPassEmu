@@ -24,6 +24,7 @@ Body offsets (body-relative)::
     0x375C  residence: byte 2 = region, byte 3 = country (1 = Japan)
     0x3760  country names 16x0x40               0x3B60  region names 16x0x40
     0x3F60  comment header (u32 counter, ...)   0x3F70  comment (16 chars, UTF-16LE)
+    0x3F69  hobby: 0 none, 1 イラスト, 9 インターネット, 10 ゲーム (a 0-27 list; others unidentified)
 """
 from __future__ import annotations
 
@@ -61,6 +62,7 @@ OFF_COUNTRY_NAMES = 0x3760
 OFF_REGION_NAMES = 0x3B60
 OFF_COMMENT_HEADER = 0x3F60
 OFF_MII_ID_COPY = 0x4484
+OFF_HOBBY = 0x3F69   # selects the "...が趣味なんだ" line; known: 1 イラスト, 9 インターネット, 10 ゲーム
 OFF_COMMENT = 0x3F70
 NAME_ENTRY = 0x40
 COMMENT_MAX_CHARS = 16
@@ -101,7 +103,7 @@ class BoxSpec:
     mii: bytes                                     # 96-byte FFLStoreData of the sender
     comment: str = ""                              # greeting, up to 16 chars
     notice: str = "誰か来ています!"                # TLV id=4 text (up to 8 chars)
-    header_icon: Optional[bytes] = None            # 3200 B tiled RGB565 (default: blank)
+    header_icon: Optional[bytes] = None            # 3200 B tiled RGB565 (default: a grey placeholder)
     app_title_id: int = DEFAULT_APP_TITLE_ID
     app_title_version: int = DEFAULT_APP_TITLE_VERSION
     titles: Optional[list[Title]] = None           # SMDH Title[16] (padded with the last one)
@@ -113,7 +115,8 @@ class BoxSpec:
     region_names: Optional[list[str]] = None       # 16 languages
     mii_id_copy: Optional[bytes] = None            # 10 B at 0x4484; default: the Mii's own mii_id
     visit_counter: int = 1                         # u32 at 0x3F60 (monotonic on a real console)
-    comment_header_tail: bytes = bytes(12)         # 0x3F64..0x3F70, meaning unknown
+    comment_header_tail: bytes = bytes(12)         # 0x3F64..0x3F70 (mostly unknown, see ``hobby``)
+    hobby: Optional[int] = None                    # 0 = none, 1-27: the "... is my hobby" line (byte 0x3F69)
     message_id: Optional[bytes] = None             # 8 bytes, random by default
     created: Optional[datetime.datetime] = None    # default: now
     extra_body: dict[int, bytes] = field(default_factory=dict)  # body offset -> bytes (unmodelled areas)
@@ -155,14 +158,15 @@ def build_body(spec: BoxSpec) -> bytes:
     put(OFF_TITLE_TABLE, build_title_table(titles))
     assert len(build_title_table(titles)) == TITLE_TABLE_SIZE
 
-    if spec.small_icon is not None:
-        if len(spec.small_icon) != icon.icon_bytes(icon.SMALL_SIZE):
-            raise ValueError("small icon must be 1152 bytes")
-        put(OFF_SMALL_ICON, spec.small_icon)
-    if spec.large_icon is not None:
-        if len(spec.large_icon) != icon.icon_bytes(icon.LARGE_SIZE):
-            raise ValueError("large icon must be 4608 bytes")
-        put(OFF_LARGE_ICON, spec.large_icon)
+    # a missing icon becomes a plain placeholder: all-zero bitmap data is shown as a black square
+    small = spec.small_icon if spec.small_icon is not None else icon.placeholder(icon.SMALL_SIZE)
+    if len(small) != icon.icon_bytes(icon.SMALL_SIZE):
+        raise ValueError("small icon must be 1152 bytes")
+    put(OFF_SMALL_ICON, small)
+    large = spec.large_icon if spec.large_icon is not None else icon.placeholder(icon.LARGE_SIZE)
+    if len(large) != icon.icon_bytes(icon.LARGE_SIZE):
+        raise ValueError("large icon must be 4608 bytes")
+    put(OFF_LARGE_ICON, large)
 
     if len(spec.mii) != FFL_STORE_DATA_SIZE:
         raise ValueError(f"mii must be {FFL_STORE_DATA_SIZE} bytes (FFLStoreData)")
@@ -182,6 +186,10 @@ def build_body(spec: BoxSpec) -> bytes:
     if len(spec.comment_header_tail) != 12:
         raise ValueError("comment_header_tail must be 12 bytes")
     put(OFF_COMMENT_HEADER, struct.pack("<I", spec.visit_counter) + spec.comment_header_tail)
+    if spec.hobby is not None:
+        if not 0 <= spec.hobby <= 27:
+            raise ValueError("hobby must be 0-27")
+        body[OFF_HOBBY] = spec.hobby
     put(OFF_COMMENT, _utf16_fixed(spec.comment, (COMMENT_MAX_CHARS + 1) * 2))
 
     for off, data in spec.extra_body.items():
@@ -191,7 +199,7 @@ def build_body(spec: BoxSpec) -> bytes:
 
 def build_message(spec: BoxSpec) -> bytes:
     """The bare message (magic 0x6060), as stored in the CEC InBox/OutBox."""
-    icon_data = spec.header_icon if spec.header_icon is not None else bytes(HEADER_ICON_SIZE)
+    icon_data = spec.header_icon if spec.header_icon is not None else icon.placeholder(icon.TLV_SIZE)
     if len(icon_data) != HEADER_ICON_SIZE:
         raise ValueError(f"header icon must be {HEADER_ICON_SIZE} bytes")
     notice = _utf16_fixed(spec.notice, NOTICE_BYTES)

@@ -62,7 +62,7 @@ class Runner:
     # ---- settings (paths and numbers only; never key material) -------------------------------
     def load_settings(self) -> None:
         try:
-            saved = json.loads((self.workspace / SETTINGS_FILE).read_text())
+            saved = json.loads((self.workspace / SETTINGS_FILE).read_text(encoding="utf-8"))
             self.settings.update({k: v for k, v in saved.items() if k in DEFAULT_SETTINGS})
         except (OSError, ValueError):
             pass
@@ -73,7 +73,7 @@ class Runner:
         for k in DEFAULT_SETTINGS:
             if k in new:
                 self.settings[k] = new[k]
-        (self.workspace / SETTINGS_FILE).write_text(json.dumps(self.settings, ensure_ascii=False, indent=2))
+        (self.workspace / SETTINGS_FILE).write_text(json.dumps(self.settings, ensure_ascii=False, indent=2), encoding="utf-8")
 
     @staticmethod
     def _clean_friend_code(text: str) -> str:
@@ -116,11 +116,13 @@ class Runner:
 
     def _env(self) -> dict:
         env = dict(os.environ)
+        env["PYTHONUTF8"] = "1"  # Windows would otherwise read/write files and pipes as cp932
+        env["PYTHONIOENCODING"] = "utf-8"
         if self.settings["keyslot_file"]:
             env["STREETPASS_KEYSLOT_2E_FILE"] = str(Path(self.settings["keyslot_file"]).expanduser())
         if self.settings["friend_code"]:
             f = self.workspace / "friend_code.json"
-            f.write_text(json.dumps({"friend_code": self.settings["friend_code"]}))
+            f.write_text(json.dumps({"friend_code": self.settings["friend_code"]}), encoding="utf-8")
             env["STREETPASS_FRIEND_CODE_FILE"] = str(f)
         return env
 
@@ -200,7 +202,7 @@ class Runner:
         self.log("$ " + " ".join(cmd))
         kwargs = {"start_new_session": True} if os.name != "nt" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
         self._proc = subprocess.Popen(cmd, cwd=w, env=self._env(), stdout=subprocess.PIPE,
-                                      stderr=subprocess.STDOUT, text=True, bufsize=1, **kwargs)
+                                      stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", bufsize=1, **kwargs)
         threading.Thread(target=self._pump, args=(self._proc,), daemon=True).start()
 
     def _pump(self, proc: subprocess.Popen) -> None:

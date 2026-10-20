@@ -22,7 +22,7 @@ python scripts/build_tmp_box.py --mii my_mii.bin --comment "Hello!" -o box.bin
 # or take the sender Mii from a picture of its Mii QR code (needs zbarimg or pyzbar):
 python scripts/build_tmp_box.py --mii-qr my_mii_qr.png --comment "Hello!" -o box.bin
 # optional: --smdh app.smdh | --title NAME | --large-icon img.png --small-icon img.png \
-#           --header-icon img.png | --country 1 --region 41 | --counter N
+#           --header-icon img.png | --prefecture 福岡県 | --hobby 10 | --counter N
 ```
 
 `--mii` is a raw 96-byte FFLStoreData or a 112-byte encrypted Mii blob / Mii QR payload; `--mii-qr`
@@ -34,7 +34,10 @@ header, TLVs, body and HMAC trailer are generated; only the pieces Mii Plaza nee
 the icon sizes (needs Pillow). The result can be checked without a console with
 [EMULATOR_TEST.md](EMULATOR_TEST.md), and `mii_plaza_editor.py edit` can still be applied to it.
 In code: `streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`.
-**Not yet tried on a real console.**
+`--prefecture` (a Japanese name, an English name or the JIS number) fills in the country and region codes and names;
+without it the console shows "_" as the residence. `--hobby N` picks the "…is my hobby" line (0 = none; known: 1 illustration,
+9 internet, 10 games). Missing icons become a grey stand-in (all-zero data would be a black square). **Boxes built this way were
+accepted by Mii Plaza on real consoles (Linux and macOS hosts).**
 
 ## Options to use every time
 

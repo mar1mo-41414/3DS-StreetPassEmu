@@ -19,6 +19,7 @@ from typing import Optional
 from .. import icon
 from ..mii_qr import (AUTHOR_ID_OFFSET, CHECKSUM_OFFSET, FFL_STORE_DATA_SIZE, MII_ID_OFFSET, NICKNAME_LEN,
                       NICKNAME_OFFSET, crc16_xmodem, new_mii_id)
+from ..regions import COUNTRY_JAPAN, JP_PREFECTURES, find_prefecture, prefecture_of_code
 from ..smdh import Title, parse_smdh
 from ..tmp_box_builder import (COMMENT_MAX_CHARS, HEADER_FIELDS, MII_PLAZA_HMAC_KEY, OFF_MII, BoxSpec,
                                build_message, mii_from_blob_or_raw, spec_from_message)
@@ -177,6 +178,8 @@ class Editor:
             if key in f:
                 v = self._int(f[key], key, lo, hi)
                 setattr(s, attr, v)
+        if "hobby" in f:
+            s.hobby = self._int(f["hobby"], "hobby", 0, 27)
         for key, attr in (("app_title_id", "app_title_id"), ("app_title_version", "app_title_version")):
             if key in f:
                 try:
@@ -186,12 +189,27 @@ class Editor:
                 if attr == "app_title_version" and not 0 <= v <= 0xFFFF:
                     raise EditorError(f"out_of_range: {key}")
                 setattr(s, attr, v)
+        if "prefecture" in f:
+            self.set_prefecture(f["prefecture"])
         for key, attr in (("country_ja", 0), ("country_en", 1)):
             if key in f:
                 s.country_names = _set_name(s.country_names, attr, f[key])
         for key, attr in (("region_ja", 0), ("region_en", 1)):
             if key in f:
                 s.region_names = _set_name(s.region_names, attr, f[key])
+
+    def set_prefecture(self, name: str) -> None:
+        """Japan + a prefecture (region code and names); an empty name clears the residence."""
+        s = self.spec
+        if not name:
+            s.country, s.region, s.country_names, s.region_names = 0, 0, None, None
+            return
+        found = find_prefecture(name)
+        if not found:
+            raise EditorError(f"unknown_prefecture: {name}")
+        code, ja, en = found
+        s.country, s.region = COUNTRY_JAPAN, code
+        s.country_names, s.region_names = ["日本", "Japan"], [ja, en]
 
     @staticmethod
     def _int(v, name: str, lo: int, hi: int) -> int:
@@ -278,12 +296,15 @@ class Editor:
             "app_name": t.short_description, "app_long": t.long_description, "app_publisher": t.publisher,
             "app_title_id": f"{s.app_title_id:016x}", "app_title_version": f"{s.app_title_version:04x}",
             "counter": s.visit_counter, "country": s.country, "region": s.region,
+            "prefecture": (prefecture_of_code(s.region) or ("",))[0] if s.country == COUNTRY_JAPAN else "",
             "country_ja": names(s.country_names, 0), "country_en": names(s.country_names, 1),
             "region_ja": names(s.region_names, 0), "region_en": names(s.region_names, 1),
             "icons": {k: self._icon_preview(k) for k in ICON_KINDS},
             "header": self.header_values(),
             "extra_body_bytes": sum(len(v) for v in s.extra_body.values()),
             "verify": self.verify(),
+            "hobby": s.hobby if s.hobby is not None else (s.comment_header_tail[5] if len(s.comment_header_tail) > 5 else 0),
+            "prefectures": [ja for ja, _en in JP_PREFECTURES],
             "limits": {"comment": COMMENT_MAX_CHARS, "notice": NOTICE_MAX_CHARS},
         }
 

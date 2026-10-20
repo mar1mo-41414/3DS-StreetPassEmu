@@ -22,7 +22,7 @@ python scripts/build_tmp_box.py --mii my_mii.bin --comment "こんにちは" -o 
 # または、Mii QRコードの画像から送信者Miiを取る(zbarimgまたはpyzbarが必要):
 python scripts/build_tmp_box.py --mii-qr my_mii_qr.png --comment "こんにちは" -o box.bin
 # 任意: --smdh app.smdh | --title 名前 | --large-icon img.png --small-icon img.png \
-#       --header-icon img.png | --country 1 --region 41 | --counter N
+#       --header-icon img.png | --prefecture 福岡県 | --hobby 10 | --counter N
 ```
 
 `--mii`は生の96バイトFFLStoreData、または112バイトの暗号化Mii blob/MiiQRペイロード。`--mii-qr`は
@@ -32,7 +32,10 @@ TLV・本文・HMACトレーラーを生成し、Mii Plazaが必要とする部�
 ([PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md)参照)。それ以外はゼロです。画像はアイコンの
 サイズに縮小されます(Pillowが必要)。出来たBoxは[EMULATOR_TEST.md](EMULATOR_TEST.md)で実機なしに
 確認でき、`mii_plaza_editor.py edit`もそのまま適用できます。コードからは
-`streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`。**実機ではまだ試していません。**
+`streetpass_emu.tmp_box_builder.BoxSpec` / `build_message`。`--prefecture`(日本語名・英語名・JIS番号)で国・地域のコードと名前が入ります。指定しないと居住地は「_」と表示されます。
+`--hobby N`は「ぼく…が趣味なんだ」の一文を選びます(0=なし、判明しているのは 1=イラスト、9=インターネット、10=ゲーム)。
+アイコン未指定のときは灰色の代替アイコンが入ります(ゼロのままだと黒い四角になります)。
+**この方法で作ったBoxは、実機のMii広場で受理されることを確認しました(LinuxとmacOSのホストから)。**
 
 ## 毎回付けるべきオプション
 

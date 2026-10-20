@@ -42,6 +42,6 @@ def load_friend_code(path: Optional[str] = None) -> int:
             f"no friend code file given and {DEFAULT_ENV_VAR} is not set "
             " -- pass path= explicitly or set the env var"
         )
-    with open(resolved) as f:
+    with open(resolved, encoding="utf-8") as f:
         data = json.load(f)
     return friend_code_value_from_string(data["friend_code"])

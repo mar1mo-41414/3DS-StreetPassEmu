@@ -240,7 +240,7 @@ real data:
 | 0x36B8 (14008) | 4B | u32 `0x100` (constant) |
 | 0x36BC (14012) | 24B | Header of Mii Plaza's built-in Mii DB. magic `"CFPB"` (retail; dev is `"CFPN"`), entry count at +0x14 (1 in the real data). Mii Plaza verifies the magic on receipt |
 | 0x36D4 (14036) | 112B | **The sender Mii's encrypted block** (entry 0 of the Mii DB, including the 16-byte tag; see §9) |
-| 0x375C (14172) | 4B | **Residence code**: +2 = region (prefecture) code, +3 = country code (1 = Japan). A region code of `1` means "region not set": the region names are replaced by a placeholder character |
+| 0x375C (14172) | 4B | **Residence code**: +2 = region (prefecture) code (for Japan the JIS number + 1; only Fukuoka = 41 confirmed on a real console), +3 = country code (1 = Japan). **With empty name tables the residence is shown as "_"**. A region code of `1` means "region not set": the region names are replaced by a placeholder character |
 | 0x3760 (14176) | 0x40B×16 | **Country name** strings per language (UTF-16LE, 16 languages). The receiver shows the entry for the *viewer's* console language. The u16 at the end of each entry is zeroed on receipt |
 | 0x3B60 (15200) | 0x40B×16 | **Region (prefecture) name** strings per language (same format; e.g. `福岡県` / `Fukuoka` / `福冈县` ...) |
 | 0x3F60 (16224) | 16B+string | **Greeting comment field** (below) |
@@ -263,6 +263,8 @@ console-specific areas above and the statistics can all be zero and the box is s
 +0x04 (2B): u16 (clamped to 3000)
 +0x06 – +0x0B: small byte values (+0x06 is checked against a lookup table, +0x07 is clamped to 2,
                +0x08 to 19, +0x09 to 27; possibly enumerations such as expression / balloon, unconfirmed)
++0x09: **hobby** number (0 = none; picks the "my hobby is ..." line. 1 = illustration, 9 = internet, 10 = games confirmed, max 27)
++0x0A: `1` hides the comment and the line after it (observed in an emulator, meaning unknown)
 +0x0C – +0x0F: reserved
 +0x10–: UTF-16LE string, NUL-terminated (0x0000)
 ```

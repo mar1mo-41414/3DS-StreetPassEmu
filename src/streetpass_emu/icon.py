@@ -79,6 +79,14 @@ def solid(size: int, color: Pixel) -> bytes:
     return encode([color] * (size * size), size)
 
 
+def placeholder(size: int) -> bytes:
+    """A plain light-grey square with a darker border, for boxes that carry no icon (all-zero bitmap data
+    would show up as a black square on the console)."""
+    px = [(150, 150, 150) if x in (0, size - 1) or y in (0, size - 1) else (225, 225, 225)
+          for y in range(size) for x in range(size)]
+    return encode(px, size)
+
+
 def from_png(path: Path, size: int) -> bytes:
     """Loads any image Pillow can read, scales it to ``size``x``size`` and encodes it."""
     from PIL import Image  # optional dependency (pip install pillow)

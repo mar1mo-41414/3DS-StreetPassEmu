@@ -19,6 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from streetpass_emu import icon  # noqa: E402
+from streetpass_emu.regions import COUNTRY_JAPAN, find_prefecture  # noqa: E402
 from streetpass_emu.mii_qr_image import MiiQrError, mii_from_qr_image  # noqa: E402
 from streetpass_emu.smdh import Title, parse_smdh  # noqa: E402
 from streetpass_emu.tmp_box_builder import BoxSpec, build_message, mii_from_blob_or_raw  # noqa: E402
@@ -36,8 +37,11 @@ def main() -> int:
     ap.add_argument("--header-icon", type=Path, help="image, scaled to 40x40")
     ap.add_argument("--small-icon", type=Path, help="image, scaled to 24x24")
     ap.add_argument("--large-icon", type=Path, help="image, scaled to 48x48")
+    ap.add_argument("--prefecture", help="Japan + this prefecture, e.g. 福岡県, Fukuoka or 40 (JIS number); "
+                    "sets the residence codes and names")
     ap.add_argument("--country", type=int, default=0)
     ap.add_argument("--region", type=int, default=0)
+    ap.add_argument("--hobby", type=int, default=0, help="0 = none, 1-27 (known: 1 illustration, 9 internet, 10 games)")
     ap.add_argument("--counter", type=int, default=1)
     ap.add_argument("-o", "--output", required=True, type=Path)
     a = ap.parse_args()
@@ -46,6 +50,13 @@ def main() -> int:
         mii = mii_from_qr_image(a.mii_qr) if a.mii_qr else mii_from_blob_or_raw(a.mii.read_bytes())
     except MiiQrError as e:
         ap.error(str(e))
+    country, region, country_names, region_names = a.country, a.region, None, None
+    if a.prefecture:
+        found = find_prefecture(a.prefecture)
+        if not found:
+            ap.error(f"unknown prefecture: {a.prefecture}")
+        region, ja, en = found
+        country, country_names, region_names = COUNTRY_JAPAN, ["日本", "Japan"], [ja, en]
     smdh = parse_smdh(a.smdh.read_bytes()) if a.smdh else None
     spec = BoxSpec(
         mii=mii, comment=a.comment, notice=a.notice,
@@ -53,7 +64,8 @@ def main() -> int:
         header_icon=icon.from_png(a.header_icon, icon.TLV_SIZE) if a.header_icon else None,
         small_icon=icon.from_png(a.small_icon, icon.SMALL_SIZE) if a.small_icon else (smdh.small_icon if smdh else None),
         large_icon=icon.from_png(a.large_icon, icon.LARGE_SIZE) if a.large_icon else (smdh.large_icon if smdh else None),
-        country=a.country, region=a.region, visit_counter=a.counter,
+        country=country, region=region, country_names=country_names, region_names=region_names,
+        visit_counter=a.counter, hobby=a.hobby,
     )
     msg = build_message(spec)
     a.output.write_bytes(msg)

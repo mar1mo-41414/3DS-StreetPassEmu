@@ -83,7 +83,7 @@ def load_recently_played(path: Optional[str] = None) -> List[RecentlyPlayedTitle
             f"no recently-played config file given and {DEFAULT_ENV_VAR} is not set "
             " -- pass path= explicitly or set the env var"
         )
-    with open(resolved) as f:
+    with open(resolved, encoding="utf-8") as f:
         data = json.load(f)
     entries = []
     for item in data["entries"]:

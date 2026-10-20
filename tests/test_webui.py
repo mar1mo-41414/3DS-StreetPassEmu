@@ -251,3 +251,35 @@ def test_start_builds_the_command_and_friend_code_file(gui, monkeypatch, tmp_pat
     ff = Path(seen["env"]["STREETPASS_FRIEND_CODE_FILE"])
     assert json.loads(ff.read_text()) == {"friend_code": f"{d[:4]}-{d[4:8]}-{d[8:]}"}
     assert seen["env"]["STREETPASS_KEYSLOT_2E_FILE"] == str(keyfile)
+
+
+def test_prefecture_sets_codes_and_names():
+    from streetpass_emu.regions import find_prefecture
+    assert find_prefecture("福岡県")[0] == 41 and find_prefecture("Fukuoka")[0] == 41 and find_prefecture("40")[0] == 41
+    assert find_prefecture("福岡")[1] == "福岡県" and find_prefecture("nowhere") is None
+    e = Editor()
+    e.set_mii(MII)
+    e.set_fields({"prefecture": "福岡県"})
+    st = e.state()
+    assert (st["country"], st["region"], st["prefecture"]) == (1, 41, "福岡県")
+    assert (st["country_ja"], st["region_ja"], st["region_en"]) == ("日本", "福岡県", "Fukuoka")
+    body = e.build()[0xD14:]
+    assert body[0x375C:0x3760] == bytes([0, 0, 41, 1])
+    assert body[0x3B60:0x3B60 + 8].decode("utf-16le") == "福岡県\x00"
+    e.set_fields({"prefecture": ""})
+    assert e.state()["region"] == 0 and e.state()["prefecture"] == ""
+    import pytest as _p
+    with _p.raises(EditorError, match="unknown_prefecture"):
+        e.set_fields({"prefecture": "xx"})
+
+
+def test_hobby_byte_and_placeholder_icons():
+    e = Editor()
+    e.set_mii(MII)
+    assert e.state()["hobby"] == 0
+    e.set_fields({"hobby": 10})
+    assert e.build()[0xD14 + 0x3F69] == 10 and e.state()["hobby"] == 10
+    with pytest.raises(EditorError, match="out_of_range"):
+        e.set_fields({"hobby": 28})
+    body = e.build()[0xD14:]
+    assert body[0x2038:0x2038 + 1152] != bytes(1152)      # a missing icon is a grey placeholder, not black

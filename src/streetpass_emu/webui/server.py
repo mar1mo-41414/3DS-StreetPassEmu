@@ -175,7 +175,7 @@ class App:
     def _import_keys(self, b: dict) -> None:
         text = _b64(b["data"]).decode("utf-8", "replace")
         out = self.workspace / "streetpass_keyslot_2e.json"
-        out.write_text(keyslot_json_from_aes_keys(text))
+        out.write_text(keyslot_json_from_aes_keys(text), encoding="utf-8")
         try:
             out.chmod(0o600)
         except OSError:

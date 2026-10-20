@@ -20,7 +20,7 @@ The language (Japanese / English) can be switched at the top right.
 |---|---|
 | **Send / Receive** | Starts and stops the StreetPass loop (`scripts/streetpass_loop.py`) with the Box you are editing, shows the setup check, lists adapters, keeps the settings (channel, listening time, key file, ...), and lists the boxes you received (use their Mii, or open them for editing). |
 | **Mii** | Chooses the sender Mii: from a **Mii QR code image** (Mii Maker → "Send Miis"), from a 96-byte / 112-byte Mii file, or from a received box. Shows nickname and IDs, saves the Mii file. |
-| **Box** | The greeting comment (16 characters), notification text (8), the "last app that set the Mii" (name, title ID, version, or load an **SMDH file**), counter, country / region, and the three icons (images are scaled in the browser). |
+| **Box** | The greeting comment (16 characters), notification text (8), the "last app that set the Mii" (name, title ID, version, or load an **SMDH file**), counter, hobby, residence (pick a prefecture), and the three icons (images are scaled in the browser). |
 | **Identity** | The Mii's `author_id` / `mii_id` (set, or make new ones — CRC16 and the AES-CCM tag are rebuilt automatically) and every field of the message header (messageId, times, flags, ...), with one-click "new IDs". |
 | **Files** | Start from an empty box, open a box file, download or save the current box, browse the workspace, and see the checks (HMAC, Mii CRC16, Mii tag). Opening a genuine box keeps everything the editor does not model, so saving it unchanged gives back the same bytes. |
 | **Log** | Output of the send / receive loop. |

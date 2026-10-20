@@ -31,7 +31,7 @@ python -m pip install -e ".[dev]"      # テスト用にpytestとpyctr。ハー�
 
 ### Boxの編集・生成
 - `mii_plaza_editor.py`と、96バイトのMiiファイルからのBox生成は、常に必要なパッケージだけで動く
-- **Pillow**(`pip install -e ".[images]"`): PNG/JPEG画像をアイコンにする(`--large-icon`、
+- **Pillow**(標準の依存になり、自動で入る): PNG/JPEG画像をアイコンにする(`--large-icon`、
   `--small-icon`、`--header-icon`)
 - **Mii QRコード画像からMiiを作る**(`build_tmp_box.py --mii-qr`)には、生のバイト列を返せる
   QRデコーダが必要: `zbarimg`コマンド*(システム: Debian/Ubuntuは`zbar-tools`、macOSは

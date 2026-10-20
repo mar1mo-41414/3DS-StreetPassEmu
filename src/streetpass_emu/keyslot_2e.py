@@ -46,7 +46,7 @@ def load_streetpass_normal_key(path: Optional[str] = None) -> bytes:
             " -- pass path= explicitly, set the env "
             "var, or use oracle.AesOracleClient instead if you don't have one"
         )
-    with open(resolved) as f:
+    with open(resolved, encoding="utf-8") as f:
         data = json.load(f)
     key_x = bytes.fromhex(data["key_x"])
     key_y = bytes.fromhex(data["key_y"])
