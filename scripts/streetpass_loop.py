@@ -150,6 +150,17 @@ def _build_outbound_box(args: argparse.Namespace) -> tuple[bytes | None, int, ob
     return bytes(box.data), args.outbound_title_id, mii_identity
 
 
+def _services(args: argparse.Namespace) -> list[bytes]:
+    """The StreetPass services this run announces: Mii Plaza (unless --no-mii-plaza) plus every --extra-service."""
+    services = [] if args.no_mii_plaza else [MII_PLAZA_SERVICE]
+    for hx in args.extra_service:
+        raw = bytes.fromhex(hx)
+        if len(raw) != 5:
+            raise SystemExit(f"--extra-service must be 5 bytes (10 hex digits), got {hx!r}")
+        services.append(raw)
+    return services
+
+
 async def _run_one_cycle(args: argparse.Namespace, cycle: int, out_dir: Path) -> dict:
     """1サイクル分(インターフェース起動→listen→停止)を実行し、結果の
     サマリdictを返す。"""
@@ -229,7 +240,7 @@ async def _run_one_cycle(args: argparse.Namespace, cycle: int, out_dir: Path) ->
         else:
             identity = generate_session_identity()
         responder = StreetPassResponder(
-            identity=identity, services=[MII_PLAZA_SERVICE], keyslot_2e_key=keyslot_2e_key,
+            identity=identity, services=_services(args), keyslot_2e_key=keyslot_2e_key,
             friend_code=friend_code, outbound_message_box_entry=outbound_message_box_entry,
             outbound_tmp_box=outbound_tmp_box,
         )
@@ -277,13 +288,22 @@ async def _run_one_cycle(args: argparse.Namespace, cycle: int, out_dir: Path) ->
         for mac, state in responder.peers.items():
             _log(f"cycle {cycle}: peer {mac.hex()} -> {state.value}")
 
+        for mac, entries in responder.peer_message_boxes().items():
+            for e in entries:
+                _log(f"cycle {cycle}: peer {mac.hex()} offers message box title={e.title_id:#010x} "
+                     f"mode={e.send_mode} flag={e.flag} size={e.send_size} messages={e.message_count}")
+
         for mac, tmp_boxes in responder.completed_tmp_boxes.items():
             for i, tmp_box in enumerate(tmp_boxes):
                 ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 out_path = out_dir / f"tmp_box_{mac.hex()}_cycle{cycle}_{ts}_{i}.bin"
                 out_path.write_bytes(tmp_box)
                 result["boxes_received"] += 1
-                _log(f"cycle {cycle}: received TMP Box from {mac.hex()} ({len(tmp_box)} bytes) -> {out_path}")
+                try:
+                    title = f"{spmtp.parse_tmp_box_header(tmp_box[:spmtp.TMP_BOX_HEADER_SIZE]).title_id:#010x}"
+                except ValueError:
+                    title = "?"
+                _log(f"cycle {cycle}: received TMP Box (title {title}) from {mac.hex()} ({len(tmp_box)} bytes) -> {out_path}")
 
         return result
     finally:
@@ -310,6 +330,11 @@ async def main() -> int:
                          help="毎サイクル、この文字列にコメント欄を書き換える(元と同じ文字数が必須)")
     parser.add_argument("--fresh-each-cycle", action="store_true",
                          help="サイクル毎にヘッダID(messageId等)と送信者Miiのmii_idを再生成する")
+    parser.add_argument("--extra-service", action="append", default=[], metavar="HEX",
+                         help="Mii Plaza以外にも名乗るサービスID(5バイト=10桁の16進。例: とびだせ どうぶつの森は 00198d0030)。"
+                              "複数指定可。名乗ったタイトルの受信メッセージ(本体のメッセージボックスにあるもの)を受信して保存する")
+    parser.add_argument("--no-mii-plaza", action="store_true",
+                         help="Mii Plazaのサービスを名乗らない(--extra-serviceだけで受信したいとき)")
     parser.add_argument("--fresh-message-ids-each-cycle", action="store_true",
                          help="サイクル毎にヘッダID(messageId等)だけを再生成する(送信者Miiのmii_idは変えない)。"
                               "同じMiiで何度も「n回目」を送るときに使う")

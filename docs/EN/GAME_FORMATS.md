@@ -125,6 +125,16 @@ import a message from the same town**. In the player data these are: `+0x55A6` p
 On receiving, it validates the villager ID (at `+0x2C` in the villager data) and so on, then writes
 it into the storage area.
 
+### 3.3b Receiving the game's message over the air (not yet confirmed)
+
+`scripts/streetpass_loop.py --extra-service 00198d0030` makes the PC announce the Animal Crossing service
+in addition to Mii Plaza (`--no-mii-plaza` drops Mii Plaza). Every cycle the log lists the message boxes the
+console announced (`offers message box title=... size=... messages=...`), so you can see whether the console
+offers Animal Crossing data at all; a received box is logged with its title ID and saved as before, and
+`scripts/acnl_box.py show FILE` checks it. The last service-ID byte (`0x30`) is taken from 3dbrew and has not
+been confirmed on a console; whether the console offers the game's message box over the air while asleep is
+also unconfirmed. The GUI's "Other options" field accepts the same flags.
+
 ### 3.4 Notes for analysis
 
 - **A file offset in the executable (`.code`) and the virtual address (VA) in Ghidra differ by

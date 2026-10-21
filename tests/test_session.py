@@ -1397,3 +1397,32 @@ def test_established_prober_peer_can_still_be_decrypted_as_a_data_frame_source()
     decrypted = ccmp.decrypt_data_frame(reply[0], key)
     header, _ = sptcp.parse_packet(decrypted.plaintext[len(sptcp.MSDU_PREAMBLE):])
     assert header.flags == (sptcp.FLAG_SYN | sptcp.FLAG_ACK)
+
+
+ACNL_SERVICE = bytes.fromhex("00198d0030")  # Animal Crossing: New Leaf (title 0x00198D00)
+
+
+def test_peer_message_boxes_lists_what_the_console_offers_and_extra_service_is_echoed():
+    """`--extra-service`: a responder announcing the Animal Crossing service must ask for that title's message,
+    and `peer_message_boxes()` must expose every box the console announced (including ones we do not want)."""
+    identity = SessionIdentity(console_id=bytes.fromhex("0011223344556677"), mac=bytes.fromhex("222222222222"))
+    responder = StreetPassResponder(
+        identity=identity, services=[PEER_SERVICE, ACNL_SERVICE], keyslot_2e_key=_TEST_KEYSLOT_2E_KEY
+    )
+    responder.handle_frame(_peer_broadcast_probe_request())
+    assert responder.peer_message_boxes() == {}
+    key = _expected_ccmp_key(responder)
+    acnl_entry = spmtp.MessageBoxMetadataEntry(
+        title_id=0x00198D00, send_mode=0, flag=3, send_state=0, send_size=0x7DE8, message_count=1
+    )
+    other_entry = spmtp.MessageBoxMetadataEntry(
+        title_id=0x00099999, send_mode=0, flag=3, send_state=0, send_size=100, message_count=1
+    )
+    peer_list_payload = spmtp.build_handshake_header(
+        spmtp.HandshakeHeader(packet_type=spmtp.PacketType.MESSAGE_BOX_METADATA_LIST_CLIENT, content_size=0x2C + 0x40)
+    ) + spmtp.build_message_box_metadata_list([acnl_entry, other_entry])
+    responder.handle_frame(_spmtp_data_frame(responder, key, pn=1, spmtp_payload=peer_list_payload))
+
+    assert responder.peer_message_boxes() == {PEER_MAC: [acnl_entry, other_entry]}
+    assert responder._wanted_title_ids() >= {0x00198D00, 0x00020800}
+    assert 0x00099999 not in responder._wanted_title_ids()

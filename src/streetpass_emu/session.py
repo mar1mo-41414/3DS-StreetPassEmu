@@ -985,6 +985,12 @@ class StreetPassResponder:
 
         return None
 
+    def peer_message_boxes(self) -> Dict[bytes, List[spmtp.MessageBoxMetadataEntry]]:
+        """The message boxes (title ID, send mode, size, count, ...) each peer announced in its Message Box Metadata
+        List: which games the console has StreetPass data queued for. Filled during the handshake."""
+        return {mac: list(sess.peer_message_box_entries) for mac, sess in self._sessions.items()
+                if sess.peer_message_box_entries}
+
     def _wanted_title_ids(self) -> set:
         """The title IDs (MessageBoxMetadataEntry.title_id) implied by self.services: a StreetPass "service" tag
         (dot11.py's SERVICE_ENTRY_SIZE=5 bytes) is that title ID's low 4
