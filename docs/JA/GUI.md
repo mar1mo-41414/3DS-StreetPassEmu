@@ -57,6 +57,6 @@ GUIはWi-Fiドライバのセットアップを代行しません。手で打つ
 ## 限界
 
 - MiiはニックネームとIDだけの表示です(顔の描画には本体のMiiレンダラーが必要)
-- 開始/停止は実機のハードウェアを動かす機能です。Linuxでは確認済みで、macOS・Windowsではこれまで
-  コマンドライン(GUIが実行している`streetpass_loop.py`)のみ確認しています([STATUS.md](STATUS.md))
+- 開始/停止は実機のハードウェアを動かす機能です。Buffalo WI-U3-866Dで、Linux・macOS・Windowsとも動作確認済みです。
+  他のアダプタは未検証です([STATUS.md](STATUS.md))
 - 本体のIDやファイル名が写るGUIのスクリーンショットやログは、Issueに貼らないでください

@@ -58,9 +58,10 @@ longest in this project.
 
 ## 3. Animal Crossing: New Leaf
 
-**Status: static analysis of the executable code only. It has not yet been confirmed against
-genuine messages captured from a real console.** Some offsets seem to match the layout of the
-save data known in the community, but they have not been cross-checked from memory.
+**Status: kind 1 (house + player) is verified byte for byte against a genuine message** — the one the game itself had queued in
+the console's CEC outbox (read from a NAND backup's CEC system save; it was not captured over the air). Kind 2 (moving villager) is
+still known from static analysis of the executable only, and nothing has been sent to or received from a real console over the air
+for this game yet.
 
 ### 3.1 How sending and receiving work
 
@@ -93,14 +94,25 @@ Probably the house-data exchange of "Happy Home Showcase".
 |---|---|---|
 | 0x0000 | 4 | magic `0x0700009E` |
 | 0x0004 | 4 | CRC-32C (Castagnoli, reflected polynomial `0x82F63B78`, init/xorout=`0xFFFFFFFF`) over 0x7DC0 bytes starting at 0x0008 |
-| 0x0008 | 8 | u64 (presumably an ID; unidentified) |
+| 0x0008 | 8 | Sender id: the two 4-byte halves of the sending console's Mii `author_id`, swapped (not stored in the save) |
 | 0x0010 | 0x1228 | House data (copied from the per-player region in the save at `+0x5d900 + i*0x1228`) |
-| 0x1238 | 0x6B88 | Player data (the first 0x6B88 bytes copied; the 0xA8 bytes at `+0x5498` are re-encoded when sending) |
-| 0x7DC0 | 8 | 8 bytes derived from save `+0x6e29a` (unidentified) |
+| 0x1238 | 0x6B88 | Player data: the first 0x6B88 bytes of the save's player 0 (`+0xA0`). Against a save backup it differed in only ~27 of 27,528 bytes, in places that change as the game is played |
+| 0x7DC0 | 8 | The 8 bytes at save `+0x6E29A` (meaning unknown) |
 
 On receiving, the code verifies the magic and CRC, compares body `+0x67de` / `+0x67f4` (u16) /
 `+0x67f6` (18 bytes) / `+0x6808` with the corresponding positions in its own save, and **does not
-import a message from the same town**.
+import a message from the same town**. In the player data these are: `+0x55A6` player id (u16), `+0x55A8` player name
+(UTF-16LE, 10 characters), `+0x55BC` town id (u16), `+0x55BE` town name (UTF-16LE, 9 characters) and, from `+0x55D0`, a creation date.
+
+**Verified against the genuine message** (`scripts/acnl_box.py show`, module `streetpass_emu.acnl`):
+
+- header: the standard `CecMessageHeader`; title ID `0x00198D00`, `batch_id` 1, flags bytes `0x34`/`0x35` = 3, `sendCount` `0xFF`,
+  `forwardCount` 1, `userData` 1; TLV id=2 is a 3200-byte icon, TLV id=4 a UTF-16LE text such as "<town>\n<player>'s model house"
+- the CRC-32C of body `0x08..` matches, and the 32-byte trailer is **HMAC-SHA256 over the body with the key
+  `ne2seon7xy1ars3duofzxjbmykufd0n8`** (the key stored in the title's `MBoxInfo`, offset 0x10, as for Mii Plaza; read from one console — Mii Plaza's key was identical on every console tested, ACNL's has not been compared)
+- rebuilding the message from its parts reproduces the original **byte for byte**; a message built from a save file's player and house
+  regions is accepted by the same checks
+- the save file layout: player *n* at `0xA0 + 0x9F10·n` (only *n* = 0 checked), house *n* at `0x5D900 + 0x1228·n`
 
 ### 3.3 Message kind 2 (`userData=2`): moving villager (body 0x2520 bytes, sent only once)
 

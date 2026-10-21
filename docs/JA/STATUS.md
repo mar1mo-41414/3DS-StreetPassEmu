@@ -18,7 +18,7 @@
 - USB Wi-Fiアダプタ: 偽装MAC対応のチップが必須。確認済み機種と、買う前の確認方法は
   [HARDWARE.md](HARDWARE.md)
 - `pytest`はハードウェア不要で全件通る
-- **未検証**: 他リージョンの本体、New 3DS系、上記以外のアダプタ、macOS・WindowsでのGUIの開始/停止
+- **未検証**: 他リージョンの本体、New 3DS系、上記以外のアダプタ
 - 機能ごとに必要なもの(Miiを送るのにNANDバックアップは要らない: Mii作成の「Miiを送る」のQRコードで足りる。NANDはまとめて抽出したいときの任意の手段)は
   [SETUP.md](SETUP.md) §0の表を参照
 
@@ -33,10 +33,10 @@
 | 5 | (NANDバックアップがある場合)NANDバックアップだけから材料を取り出す: CTRNANDの復号、共有Miiデータベース(CFL_DB)からの自分のMii/過去に会った相手のMiiの抽出 | [SETUP.md](SETUP.md) §4.1・§4.3 → `scripts/decrypt_ctrnand.py` / `extract_extdata_file.py` / `extract_console_miis.py` |
 | 6 | Wi-Fi層のCCMP暗号鍵の導出をPC単体・オフラインで行う(実機への問い合わせ不要)。実機のAESキースロット0x2Eの鍵材料を、自分の実機のGodMode9ダンプから用意する前提 | [SETUP.md](SETUP.md) §4.2、[PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md) §3 |
 | 7 | 実機のホームブリュー経由の代替経路: キースロット0x2Eをオラクルとして使う(`homebrew/aes_oracle`)、CECDのSPR経路でメッセージを注入する(`homebrew/spr_inject`) | `homebrew/aes_oracle/README.md`、各ディレクトリのMakefile(devkitARM) |
-| 8 | Mii Plaza以外のゲーム(とびだせ どうぶつの森)のStreetPassメッセージ本文の構造を、静的解析で読み解く(**実機での検証はまだ**) | [GAME_FORMATS.md](GAME_FORMATS.md) |
+| 8 | Mii Plaza以外のゲーム(とびだせ どうぶつの森)のStreetPassメッセージ本文の構造を、静的解析で読み解く(**種別1は、本体のCEC送信箱にあった本物のメッセージで検証済み。無線での送受信はまだ**) | [GAME_FORMATS.md](GAME_FORMATS.md) → `scripts/acnl_box.py` |
 | 9 | **TMP Boxをゼロから生成する**(実機から受信したBoxを雛形にしない): ヘッダ・TLV・本文・HMACを組み立てる。アイコン画像/SMDHの取り込み付き(**Linux・macOS・Windowsのホストから、実機のMii Plazaで受理されることを確認**。まっさらなランダムMii、都道府県、趣味・犬猫・夢の一文を含む) | [CUSTOM.md](CUSTOM.md) → `scripts/build_tmp_box.py` |
 | 10 | 実機なしで、BoxをエミュレータのMii Plazaに通して**受理されるか**を確認する。Boxの各領域が受理に必要かの切り分けにも使える | [EMULATOR_TEST.md](EMULATOR_TEST.md) → `scripts/emu_receiver_test.py` / `emu_bisect_box.py` |
-| 11 | 編集・生成の全てを、どのOSでもブラウザの**GUI**(送受信・Mii・Box編集・識別情報・ファイル・ログのタブ)から行う。送受信ループの開始/停止もここから | [GUI.md](GUI.md) → `python scripts/gui.py`(編集系は動作確認済み。開始/停止はLinuxで確認、macOS・Windowsは未確認 — コマンドラインは3つとも動作) |
+| 11 | 編集・生成の全てを、どのOSでもブラウザの**GUI**(送受信・Mii・Box編集・識別情報・ファイル・ログのタブ)から行う。送受信ループの開始/停止もここから | [GUI.md](GUI.md) → `python scripts/gui.py`(Linux・macOS・Windowsで、開始/停止と送信を含めて動作確認済み) |
 
 ### 受理される送信データの条件(Mii Plaza)
 
@@ -78,7 +78,7 @@
 
 | 課題 | 概要 |
 |---|---|
-| ゲーム固有メッセージの実機検証 | とびだせ どうぶつの森のメッセージ(`userData=1`: 家+プレイヤー、`userData=2`: 引っ越し住民)の表を、実機から本物を採取して裏付ける。未特定の8バイトフィールドが2箇所、プレイヤーデータ(0x6B88バイト)の内訳も未解読 |
+| ゲーム固有メッセージを実機と無線で送受信する | とびだせ どうぶつの森の種別1(家+プレイヤー)は本物とバイト単位で一致した。種別2(引っ越し住民)は未検証で、ゲームのメッセージを無線で受信する(そのサービスを名乗る)ことも、実機に送ることも未実施。本文`0x7DC0`の8バイトと、プレイヤーデータの細かい内訳は未解読 |
 | ゲーム固有メッセージの送信経路への統合 | 別タイトルIDのサービスとして提示し、本文のCRC-32Cを再計算して送る方法の設計。HMAC付き書き込み経路を使うかは未確認 |
 | 他のStreetPass対応ゲームの解析 | マリオカート7(ゴースト)、ファイアーエムブレムif等。ゲームごとにMii Plazaと同程度の解析作業が必要 |
 | タイミング制約の有無 | ハンドシェイクが途中で止まることがあるが、Wi-Fi環境の問題か応答タイミング制約によるものか切り分けていない |

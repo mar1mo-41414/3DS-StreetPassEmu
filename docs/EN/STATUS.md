@@ -18,7 +18,7 @@ console, within radio range, through a USB Wi-Fi adapter.
 - USB Wi-Fi adapter: a chip with spoofed-MAC support is mandatory. For verified models and how
   to check before buying, see [HARDWARE.md](HARDWARE.md)
 - `pytest` passes with no hardware
-- **Untested**: other console regions, New 3DS models, adapters other than those above, the GUI's Start/Stop on macOS and Windows
+- **Untested**: other console regions, New 3DS models, adapters other than those above
 - What each feature requires (a NAND backup is never required to send a Mii: the Mii Maker's "Send Miis" QR code does the job; the NAND is an optional way to extract Miis in bulk) is in the
   table in [SETUP.md](SETUP.md) §0
 
@@ -33,10 +33,10 @@ console, within radio range, through a USB Wi-Fi adapter.
 | 5 | (With a NAND backup) extract material from the NAND backup alone: decrypt CTRNAND, and pull your own Mii / Miis of people you met before out of the shared Mii database (CFL_DB) | [SETUP.md](SETUP.md) §4.1 and §4.3 → `scripts/decrypt_ctrnand.py` / `extract_extdata_file.py` / `extract_console_miis.py` |
 | 6 | Derive the Wi-Fi-layer CCMP key on the PC alone, offline (no queries to the console). Assumes you prepare the AES keyslot 0x2E key material from your own console with GodMode9 | [SETUP.md](SETUP.md) §4.2, [PROTOCOL_REFERENCE.md](PROTOCOL_REFERENCE.md) §3 |
 | 7 | Alternative homebrew-based routes on the console: use keyslot 0x2E as an oracle (`homebrew/aes_oracle`), or inject a message through CECD's SPR path (`homebrew/spr_inject`) | `homebrew/aes_oracle/README.md`, the Makefile in each directory (devkitARM) |
-| 8 | Decode the structure of the StreetPass message body of a game other than Mii Plaza (Animal Crossing: New Leaf) by static analysis (**not yet verified on a real console**) | [GAME_FORMATS.md](GAME_FORMATS.md) |
+| 8 | Decode the structure of the StreetPass message body of a game other than Mii Plaza (Animal Crossing: New Leaf) by static analysis (**kind 1 verified against a genuine message from the console's CEC outbox; nothing exchanged over the air yet**) | [GAME_FORMATS.md](GAME_FORMATS.md) → `scripts/acnl_box.py` |
 | 9 | **Generate a TMP Box from scratch** (no genuine box as a template): builds the header, TLVs, body and HMAC, with icon-image / SMDH import (**accepted by Mii Plaza on real consoles from Linux, macOS and Windows hosts**; includes a random new Mii, prefecture, hobby / pet / dream lines) | [CUSTOM.md](CUSTOM.md) → `scripts/build_tmp_box.py` |
 | 10 | Run a box through Mii Plaza in an emulator to see whether it is **accepted**, with no console. Also tells which regions of the box acceptance depends on | [EMULATOR_TEST.md](EMULATOR_TEST.md) → `scripts/emu_receiver_test.py` / `emu_bisect_box.py` |
-| 11 | Do all of the editing and building from a browser **GUI** (tabs: send/receive, Mii, box, identity, files, log) on any OS; start/stop the send/receive loop from it | [GUI.md](GUI.md) → `python scripts/gui.py` (editing tabs tested; Start/Stop verified on Linux, not yet on macOS or Windows — the command line works on all three) |
+| 11 | Do all of the editing and building from a browser **GUI** (tabs: send/receive, Mii, box, identity, files, log) on any OS; start/stop the send/receive loop from it | [GUI.md](GUI.md) → `python scripts/gui.py` (verified on Linux, macOS and Windows, including Start/Stop and sending) |
 
 ### Conditions for outgoing data to be accepted (Mii Plaza)
 
@@ -80,7 +80,7 @@ Priority is split into "worth tackling next" and "investigate only if it causes 
 
 | Problem | Summary |
 |---|---|
-| Verifying game-specific messages on a real console | Confirm the Animal Crossing: New Leaf message tables (`userData=1`: house + player, `userData=2`: moving villager) against genuine captures. Two 8-byte fields are unidentified, and the breakdown of the player data (0x6B88 bytes) is undecoded |
+| Exchanging game-specific messages with a real console over the air | The Animal Crossing: New Leaf kind-1 message (house + player) matches a genuine one byte for byte; kind 2 (moving villager) is still unverified, and receiving the game's message over the air (advertising its service) and sending one to a console are not done. The 8 bytes at body `0x7DC0` and the finer layout of the player data are undecoded |
 | Integrating game-specific messages into the send path | Design how to advertise a different title ID as a service and send the body with a recomputed CRC-32C. Whether to use the HMAC write path is unconfirmed |
 | Analyzing other StreetPass-enabled games | Mario Kart 7 (ghosts), Fire Emblem Fates, etc. Each game needs about as much analysis work as Mii Plaza |
 | Whether timing constraints exist | The handshake sometimes stalls, but it has not been separated whether that is a Wi-Fi environment issue or a response-timing constraint |
