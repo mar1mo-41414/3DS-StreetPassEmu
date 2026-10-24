@@ -125,15 +125,20 @@ import a message from the same town**. In the player data these are: `+0x55A6` p
 On receiving, it validates the villager ID (at `+0x2C` in the villager data) and so on, then writes
 it into the storage area.
 
-### 3.3b Receiving the game's message over the air (not yet confirmed)
+### 3.3b Receiving the game's message over the air (confirmed)
 
 `scripts/streetpass_loop.py --extra-service 00198d0030` makes the PC announce the Animal Crossing service
-in addition to Mii Plaza (`--no-mii-plaza` drops Mii Plaza). Every cycle the log lists the message boxes the
-console announced (`offers message box title=... size=... messages=...`), so you can see whether the console
-offers Animal Crossing data at all; a received box is logged with its title ID and saved as before, and
-`scripts/acnl_box.py show FILE` checks it. The last service-ID byte (`0x30`) is taken from 3dbrew and has not
-been confirmed on a console; whether the console offers the game's message box over the air while asleep is
-also unconfirmed. The GUI's "Other options" field accepts the same flags.
+in addition to Mii Plaza (`--no-mii-plaza` drops Mii Plaza). **This works**: a real console put `00 19 8D 00 30`
+in its own probe requests, offered the game's message box in its Message Box Metadata List (title
+`0x00198d00`, `send_mode=3`, size 35,596 B for one kind-1 message — 48,504 B when a kind-2 message was queued as
+well) and transferred it as a second TMP Box right after the Mii Plaza one. The received box passes
+`scripts/acnl_box.py show` (magic, CRC-32C and HMAC all OK) and matches the message read from the console's own CEC
+outbox, so the HMAC key now checks out over the air as well (still one console only).
+
+Every cycle the log lists the message boxes the console announced (`offers message box title=... size=...
+messages=...`), and each received box is logged with its title ID. The GUI's "Other options" field accepts the same
+flags. Whether the console still offers the box while asleep was not recorded, and kind 2 (moving villager) was
+offered once but not received yet.
 
 ### 3.4 Notes for analysis
 

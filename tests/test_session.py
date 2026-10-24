@@ -1426,3 +1426,37 @@ def test_peer_message_boxes_lists_what_the_console_offers_and_extra_service_is_e
     assert responder.peer_message_boxes() == {PEER_MAC: [acnl_entry, other_entry]}
     assert responder._wanted_title_ids() >= {0x00198D00, 0x00020800}
     assert 0x00099999 not in responder._wanted_title_ids()
+
+
+def test_responder_collects_two_tmp_boxes_when_the_second_restarts_at_bytes_sent_zero(monkeypatch):
+    """Live (2026-10-24): a console offering Mii Plaza and Animal Crossing sent the two boxes back to back, and the
+    second box's bytes_sent started over at 0 (per box, not cumulative across the queue). The second box used to be
+    discarded as stale data, so only Mii Plaza was ever received."""
+    monkeypatch.setattr(session_module, "TMP_BOX_WINDOW_SIZE", 8)
+    responder = _responder_with_ccmp()
+    responder.handle_frame(_peer_broadcast_probe_request())
+    key = _expected_ccmp_key(responder)
+
+    def make_box(title_id: int, fill: int) -> bytes:
+        body = bytes([fill]) * 20
+        return spmtp.build_tmp_box_header(
+            spmtp.TmpBoxHeader(size=spmtp.TMP_BOX_HEADER_SIZE + len(body), title_id=title_id, group_id=0, message_count=1)
+        ) + body
+
+    boxes = [make_box(0x00020800, 0x11), make_box(0x00198D00, 0x22)]
+    pn = 1
+    for box in boxes:
+        for start in range(0, len(box), 8):
+            window = box[start:start + 8]
+            responder.handle_frame(
+                _tmp_box_data_frame(responder, key, pn=pn, flags=sptcp.FLAG_ACK, payload=window[:4], bytes_sent=start)
+            )
+            responder.handle_frame(
+                _tmp_box_data_frame(
+                    responder, key, pn=pn + 1, flags=sptcp.FLAG_PSH | sptcp.FLAG_ACK | sptcp.FLAG_END,
+                    payload=window[4:], bytes_sent=start + 4,
+                )
+            )
+            pn += 2
+
+    assert responder.completed_tmp_boxes[PEER_MAC] == boxes

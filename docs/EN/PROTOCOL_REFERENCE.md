@@ -105,7 +105,7 @@ Header (`sptcp.py`, 0x18 = 24 bytes):
 | 0x0 | 2 | magic | `0x5959` |
 | 0x2 | 2 | total_size | header(0x18) + payload + 0x18 |
 | 0x4 | 4 | constant | `AD DE AF BE` (as a byte sequence) |
-| 0x8 | 4 | bytes_sent | **cumulative bytes sent over the whole transfer** (not window-relative) |
+| 0x8 | 4 | bytes_sent | **cumulative bytes sent over the whole transfer** (not window-relative); when a console sends several TMP Boxes in a row, the counter **starts over at 0 for each box** |
 | 0xC | 4 | bytes_received | **cumulative bytes received over the whole transfer** |
 | 0x10 | 1 | shifted_size | `(0x18+0x18)>>2` = always fixed at `0x0c` |
 | 0x11 | 1 | flags | FIN(bit0) / SYN(bit1) / RST(bit2) / PSH(bit3) / ACK(bit4) / END(bit5) |

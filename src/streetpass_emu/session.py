@@ -47,6 +47,11 @@ _SPMTP_TYPE_NAMES = {
 }
 
 
+def _starts_with_tmp_box_header(data: bytes) -> bool:
+    """Whether `data` begins with the TMP Box header magic (the first packet of a box may be shorter than the header)."""
+    return data[:2] == spmtp.TMP_BOX_MAGIC.to_bytes(2, "little")
+
+
 def _dbg(msg: str) -> None:
     if _DEBUG_SPTCP:
         print(f"[sptcp-debug] {msg}", flush=True)
@@ -749,6 +754,17 @@ class StreetPassResponder:
                 pass  # retransmission of data we already have -- nothing to do
             elif pos >= 0:
                 del buf[pos:]
+                buf += payload
+            elif header.bytes_sent == 0 and _starts_with_tmp_box_header(payload):
+                # Live (2026-10-24, a console offering Mii Plaza + Animal
+                # Crossing): after the first box completed, the second box
+                # started over at bytes_sent=0 -- the counter is per box, not
+                # cumulative across the queue. A restart at 0 whose first
+                # bytes are a TMP Box header is a new box (or a from-scratch
+                # restart of the one just finished: then we merely collect a
+                # duplicate) -- not stale data.
+                session.tmp_box_stream_offset = 0
+                buf.clear()
                 buf += payload
             # else: pos < 0 -- stale data preceding a message we've already
             # extracted (see tmp_box_stream_offset) -- ignore entirely.

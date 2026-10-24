@@ -103,7 +103,7 @@ EXT_IVフラグあり)。
 | 0x0 | 2 | magic | `0x5959` |
 | 0x2 | 2 | total_size | header(0x18)+payload+0x18 |
 | 0x4 | 4 | constant | `AD DE AF BE`(バイト列そのまま) |
-| 0x8 | 4 | bytes_sent | **転送全体を通じた累積送信バイト数**(ウィンドウ相対ではない) |
+| 0x8 | 4 | bytes_sent | **転送全体を通じた累積送信バイト数**(ウィンドウ相対ではない)。本体が複数のTMP Boxを続けて送るときは、**箱ごとに0から数え直す** |
 | 0xC | 4 | bytes_received | **転送全体を通じた累積受信バイト数** |
 | 0x10 | 1 | shifted_size | `(0x18+0x18)>>2` = 常に`0x0c`固定 |
 | 0x11 | 1 | flags | FIN(bit0)/SYN(bit1)/RST(bit2)/PSH(bit3)/ACK(bit4)/END(bit5) |
