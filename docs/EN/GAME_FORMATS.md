@@ -140,6 +140,29 @@ messages=...`), and each received box is logged with its title ID. The GUI's "Ot
 flags. Whether the console still offers the box while asleep was not recorded, and kind 2 (moving villager) was
 offered once but not received yet.
 
+### 3.3c Sending a message from "another town"
+
+A game ignores a message from its own town, so a message built from your own save has to claim a different one:
+
+```bash
+python scripts/acnl_box.py from-save garden_plus.dat --other-town --player-name NAME --town-name TOWN \
+    --notice $'TOWN\nNAME...' --icon-from a_received_box.bin --tmp-box -o box.bin
+run --channel 1 --cycle-seconds 240 --cycles 1 --extra-service 00198d0030 \
+    --outbound-raw-tmp-box box.bin --outbound-send-mode 3 --outbound-flag 3
+```
+
+`--other-town` rewrites the player id, player name, town id and town name (random ids unless `--player-id` /
+`--town-id` are given) everywhere the player data stores them — once at `+0x55A6` and in every design pattern. The
+console accepted the offer: it asked for the box (`send_mode=3, flag=3`) and the 35,616-byte transfer completed.
+
+**Result on a real console (verified): the game took it as a visitor's model house.** The StreetPass notification list
+showed "<town> / <player>'s model house" with the message's creation time; in the game the house could be viewed
+(Happy Home Showcase: owner, town, the player's profile card, the interior rating) and the visiting character
+spoke the new town and player name. No freeze, crash or garbled text, and nothing looked wrong afterwards.
+The profile card and the house are the ones in the save the message was built from; only the identity fields were
+changed. **Back up the receiving save first** (JKSV) anyway — this was tried once, with a backup in hand.
+`--outbound-raw-tmp-box` sends a ready-made TMP Box of any title as it is.
+
 ### 3.4 Notes for analysis
 
 - **A file offset in the executable (`.code`) and the virtual address (VA) in Ghidra differ by

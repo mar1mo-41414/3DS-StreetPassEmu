@@ -69,3 +69,36 @@ def test_from_save_copies_the_right_regions():
     assert msg.house == bytes(save[0x5D900:0x5D900 + acnl.HOUSE_SIZE])
     assert msg.tail == bytes(save[0x6E29A:0x6E2A2])
     assert msg.notice == "はな\nさくら" and acnl.parse_message(msg.build()).hmac_ok
+
+
+def test_retarget_identity_rewrites_every_copy_and_keeps_the_rest():
+    player = bytearray(fake_player())
+    block = bytes(player[0x55A6:0x55A6 + acnl.IDENTITY_SIZE])
+    for off in (0x56, 0x8C6, 0x1136):                     # design patterns store their creator too
+        player[off:off + len(block)] = block
+    new = acnl.retarget_identity(bytes(player), player_id=0xBEEF, player_name="あいう", town_id=0xCAFE, town_name="たうん")
+    msg = acnl.AcnlHouseMessage(id64=bytes(8), house=bytes(acnl.HOUSE_SIZE), player=new)
+    assert (msg.player_id, msg.player_name, msg.town_id, msg.town_name) == (0xBEEF, "あいう", 0xCAFE, "たうん")
+    assert new.count(block) == 0 and len(new) == len(player)
+    diff = [i for i in range(len(new)) if new[i] != player[i]]
+    assert all(0x55A6 <= i < 0x55A6 + acnl.IDENTITY_SIZE or any(o <= i < o + len(block) for o in (0x56, 0x8C6, 0x1136))
+               for i in diff)
+    assert acnl.parse_message(msg.build()).crc_ok and acnl.parse_message(msg.build()).hmac_ok
+
+
+def test_retarget_identity_validates():
+    with pytest.raises(ValueError):
+        acnl.retarget_identity(fake_player(), player_id=1, player_name="", town_id=2, town_name="x")
+    with pytest.raises(ValueError):
+        acnl.retarget_identity(fake_player(), player_id=1, player_name="あ" * 9, town_id=2, town_name="x")
+    with pytest.raises(ValueError):
+        acnl.retarget_identity(b"short", player_id=1, player_name="a", town_id=2, town_name="x")
+
+
+def test_wrap_tmp_box_header_matches_the_genuine_one():
+    raw = make().build()
+    box = acnl.wrap_tmp_box(raw)
+    from streetpass_emu import spmtp
+    h = spmtp.parse_tmp_box_header(box[:20])
+    assert (h.size, h.title_id, h.group_id, h.message_count) == (len(raw) + 20, 0x00198D00, 1, 1)
+    assert acnl.parse_message(box).hmac_ok

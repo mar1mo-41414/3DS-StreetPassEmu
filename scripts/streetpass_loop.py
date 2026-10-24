@@ -201,7 +201,20 @@ async def _run_one_cycle(args: argparse.Namespace, cycle: int, out_dir: Path) ->
         outbound_body, title_id, mii_identity = _build_outbound_box(args)
         outbound_message_box_entry = None
         outbound_tmp_box = None
-        if outbound_body is not None:
+        if args.outbound_raw_tmp_box is not None:
+            # A complete TMP Box (header included) of any title, sent as is, e.g. one made by scripts/acnl_box.py.
+            outbound_tmp_box = args.outbound_raw_tmp_box.read_bytes()
+            raw_header = spmtp.parse_tmp_box_header(outbound_tmp_box[:spmtp.TMP_BOX_HEADER_SIZE])
+            if raw_header.size != len(outbound_tmp_box):
+                raise SystemExit(f"--outbound-raw-tmp-box: header says {raw_header.size} bytes, file has {len(outbound_tmp_box)}")
+            result["box_offered"] = True
+            outbound_message_box_entry = spmtp.MessageBoxMetadataEntry(
+                title_id=raw_header.title_id, send_mode=args.outbound_send_mode, flag=args.outbound_flag, send_state=0,
+                send_size=len(outbound_tmp_box) - spmtp.TMP_BOX_HEADER_SIZE, message_count=raw_header.message_count,
+            )
+            _log(f"cycle {cycle}: offering a raw TMP Box of title {raw_header.title_id:#010x} "
+                 f"({len(outbound_tmp_box)} bytes, send_mode={args.outbound_send_mode}, flag={args.outbound_flag})")
+        elif outbound_body is not None:
             result["box_offered"] = True
             outbound_message_box_entry = spmtp.MessageBoxMetadataEntry(
                 title_id=title_id, send_mode=0, flag=0, send_state=0,
@@ -330,6 +343,13 @@ async def main() -> int:
                          help="毎サイクル、この文字列にコメント欄を書き換える(元と同じ文字数が必須)")
     parser.add_argument("--fresh-each-cycle", action="store_true",
                          help="サイクル毎にヘッダID(messageId等)と送信者Miiのmii_idを再生成する")
+    parser.add_argument("--outbound-raw-tmp-box", type=Path, default=None, metavar="FILE",
+                         help="完成済みのTMP Box(TmpBoxHeader付き。タイトルは何でも可)をそのまま送る。"
+                              "例: scripts/acnl_box.py from-save ... --tmp-box で作った他の村のどうぶつの森メッセージ")
+    parser.add_argument("--outbound-send-mode", type=int, default=0,
+                         help="--outbound-raw-tmp-boxのメッセージボックス申告のsend_mode(どうぶつの森の本体は3で申告する)")
+    parser.add_argument("--outbound-flag", type=int, default=0,
+                         help="--outbound-raw-tmp-boxのメッセージボックス申告のflag(どうぶつの森の本体は3で申告する)")
     parser.add_argument("--extra-service", action="append", default=[], metavar="HEX",
                          help="Mii Plaza以外にも名乗るサービスID(5バイト=10桁の16進。例: とびだせ どうぶつの森は 00198d0030)。"
                               "複数指定可。名乗ったタイトルの受信メッセージ(本体のメッセージボックスにあるもの)を受信して保存する")

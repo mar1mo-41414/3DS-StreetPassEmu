@@ -139,6 +139,42 @@ def _placeholder_icon() -> bytes:
     return icon.placeholder(icon.TLV_SIZE)
 
 
+IDENTITY_OFFSET = 0x55A6      # in the player data: player id (2) + name (20) + town id (2) + town name (18)
+IDENTITY_SIZE = 2 + 20 + 2 + 18
+
+
+def retarget_identity(player: bytes, *, player_id: int, player_name: str, town_id: int, town_name: str) -> bytes:
+    """Rewrites who the player data says it is from: player id, name, town id and town name. The block appears once at
+    ``+0x55A6`` and again in each design pattern (every pattern stores its creator), so every copy of the original block
+    is replaced to keep the data self-consistent. A game ignores a message from its own town, so a message that is
+    to be accepted needs a town id / town name that differ from the receiver's. Names are limited to 8 characters."""
+    if len(player) != PLAYER_SIZE:
+        raise ValueError(f"player must be {PLAYER_SIZE} bytes")
+    if not (0 <= player_id <= 0xFFFF and 0 <= town_id <= 0xFFFF):
+        raise ValueError("player_id and town_id are 16-bit")
+    if not (1 <= len(player_name) <= 8 and 1 <= len(town_name) <= 8):
+        raise ValueError("player and town names are 1 to 8 characters")
+    old = player[IDENTITY_OFFSET:IDENTITY_OFFSET + IDENTITY_SIZE]
+    new = (struct.pack("<H", player_id) + _utf16(player_name).ljust(20, b"\0")
+           + struct.pack("<H", town_id) + _utf16(town_name).ljust(18, b"\0"))
+    out, pos, hits = bytearray(player), 0, 0
+    while (i := player.find(old, pos)) != -1:
+        out[i:i + IDENTITY_SIZE] = new
+        pos, hits = i + IDENTITY_SIZE, hits + 1
+    if hits == 0:
+        raise ValueError("identity block not found")
+    return bytes(out)
+
+
+def wrap_tmp_box(message: bytes, group_id: int = 1, message_count: int = 1) -> bytes:
+    """A message with the 0x14-byte TmpBoxHeader in front: what travels over the air (the genuine box has group id 1)."""
+    from . import spmtp
+    head = spmtp.build_tmp_box_header(spmtp.TmpBoxHeader(
+        size=spmtp.TMP_BOX_HEADER_SIZE + len(message), title_id=ACNL_TITLE_ID, group_id=group_id,
+        message_count=message_count))
+    return head + message
+
+
 @dataclass
 class Parsed:
     message: AcnlHouseMessage

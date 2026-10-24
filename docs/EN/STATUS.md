@@ -80,7 +80,7 @@ Priority is split into "worth tackling next" and "investigate only if it causes 
 
 | Problem | Summary |
 |---|---|
-| Exchanging game-specific messages with a real console over the air | The Animal Crossing: New Leaf kind-1 message (house + player) matches a genuine one byte for byte; kind 2 (moving villager) is still unverified, and receiving the game's message over the air works (advertising its service); sending one to a console is not done. The 8 bytes at body `0x7DC0` and the finer layout of the player data are undecoded |
+| Exchanging game-specific messages with a real console over the air | The Animal Crossing: New Leaf kind-1 message (house + player) matches a genuine one byte for byte; kind 2 (moving villager) is still unverified, and receiving the game's message over the air works (advertising its service); sending a kind-1 message that claims another town works (the game shows it as a visitor's model house). The 8 bytes at body `0x7DC0` and the finer layout of the player data are undecoded |
 | Integrating game-specific messages into the send path | Design how to advertise a different title ID as a service and send the body with a recomputed CRC-32C. Whether to use the HMAC write path is unconfirmed |
 | Analyzing other StreetPass-enabled games | Mario Kart 7 (ghosts), Fire Emblem Fates, etc. Each game needs about as much analysis work as Mii Plaza |
 | Whether timing constraints exist | The handshake sometimes stalls, but it has not been separated whether that is a Wi-Fi environment issue or a response-timing constraint |
